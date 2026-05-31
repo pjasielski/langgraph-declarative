@@ -10,24 +10,24 @@ Declarative graph definition for [LangGraph](https://github.com/langchain-ai/lan
 
 ```bash
 pip install langgraph-declarative
+# or
+uv add langgraph-declarative
 ```
 
 ### Define your nodes
 
 ```python
-# nodes.py
 from langgraph_declarative import Registry, build_graph
 
 registry = Registry()
 
 @registry.node("greet")
-async def greet(state):
-    return {"messages": [("assistant", "Hello! How can I help?")]}
+def greet(state):
+    return {"messages": [{"role": "assistant", "content": "Hello! How can I help?"}]}
 
 @registry.node("respond")
-async def respond(state):
-    # call your LLM here
-    return {"messages": [("assistant", "Here's my response...")]}
+def respond(state):
+    return {"messages": [{"role": "assistant", "content": "Goodbye!"}]}
 ```
 
 ### Define your graph in YAML
@@ -35,25 +35,25 @@ async def respond(state):
 ```yaml
 # workflow.yaml
 nodes:
-  - name: "greet"
+  - name: "greeter"
     function: "greet"
-  - name: "respond"
+  - name: "responder"
     function: "respond"
 
 edges:
-  - source: START
-    target: "greet"
-  - source: "greet"
-    target: "respond"
-  - source: "respond"
-    target: END
+  - source: "START"
+    target: "greeter"
+  - source: "greeter"
+    target: "responder"
+  - source: "responder"
+    target: "END"
 ```
 
 ### Build and run
 
 ```python
-graph = build_graph("workflow.yaml", registry=registry)
-result = await graph.ainvoke({"messages": []})
+graph = build_graph("workflow.yaml", registry)
+result = graph.invoke({"messages": [{"role": "user", "content": "Hi there"}]})
 ```
 
 ## Features
