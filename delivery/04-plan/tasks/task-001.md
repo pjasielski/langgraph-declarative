@@ -1,12 +1,12 @@
 # Task 001: Scaffold Project Structure
 
-**Status:** todo
+**Status:** done
 **Priority:** high
 **Assigned:** unassigned
 **Blocked by:** —
 **Effort:** S
 **Created:** 2026-05-30
-**Completed:**
+**Completed:** 2026-05-31
 
 ## Description
 

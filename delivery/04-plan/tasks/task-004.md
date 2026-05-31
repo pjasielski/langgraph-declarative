@@ -1,12 +1,12 @@
 # Task 004: Implement Schema Module + Tests
 
-**Status:** todo
+**Status:** done
 **Priority:** high
 **Assigned:** unassigned
 **Blocked by:** task-001, task-002
 **Effort:** M
 **Created:** 2026-05-30
-**Completed:**
+**Completed:** 2026-05-31
 
 ## Description
 

@@ -1,0 +1,37 @@
+nodes:
+  - name: "entry"
+    function: "entry_fn"
+  - name: "branch_a"
+    function: "branch_a_fn"
+  - name: "branch_b"
+    function: "branch_b_fn"
+  - name: "merger"
+    function: "merger_fn"
+  - name: "final_yes"
+    function: "final_yes_fn"
+  - name: "final_no"
+    function: "final_no_fn"
+
+edges:
+  # START -> entry (simple)
+  - source: "START"
+    target: "entry"
+  # entry -> [branch_a, branch_b] (fan-out)
+  - source: "entry"
+    target: ["branch_a", "branch_b"]
+  # branches -> merger (simple)
+  - source: "branch_a"
+    target: "merger"
+  - source: "branch_b"
+    target: "merger"
+  # merger -> conditional routing
+  - source: "merger"
+    path: "yes_no_router"
+    targets:
+      "yes": "final_yes"
+      "no": "final_no"
+  # finals -> END
+  - source: "final_yes"
+    target: "END"
+  - source: "final_no"
+    target: "END"

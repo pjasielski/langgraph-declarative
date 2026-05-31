@@ -1,12 +1,12 @@
 # Task 006: Implement Builder Module + Tests
 
-**Status:** todo
+**Status:** done
 **Priority:** high
 **Assigned:** unassigned
 **Blocked by:** task-002, task-003, task-004, task-005
 **Effort:** L
 **Created:** 2026-05-30
-**Completed:**
+**Completed:** 2026-05-31
 
 ## Description
 

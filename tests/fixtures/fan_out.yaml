@@ -1,0 +1,21 @@
+nodes:
+  - name: "splitter"
+    function: "split"
+  - name: "branch_a"
+    function: "process_a"
+  - name: "branch_b"
+    function: "process_b"
+  - name: "joiner"
+    function: "join"
+
+edges:
+  - source: "START"
+    target: "splitter"
+  - source: "splitter"
+    target: ["branch_a", "branch_b"]
+  - source: "branch_a"
+    target: "joiner"
+  - source: "branch_b"
+    target: "joiner"
+  - source: "joiner"
+    target: "END"

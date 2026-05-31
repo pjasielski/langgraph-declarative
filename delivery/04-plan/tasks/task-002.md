@@ -1,12 +1,12 @@
 # Task 002: Implement Errors Module
 
-**Status:** todo
+**Status:** done
 **Priority:** high
 **Assigned:** unassigned
 **Blocked by:** task-001
 **Effort:** S
 **Created:** 2026-05-30
-**Completed:**
+**Completed:** 2026-05-31
 
 ## Description
 

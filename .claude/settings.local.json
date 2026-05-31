@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3 -m pytest tests/ -v)",
+      "Bash(source $HOME/.local/bin/env)",
+      "Bash(uv run:*)"
+    ]
+  }
+}
