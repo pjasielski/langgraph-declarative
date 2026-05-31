@@ -1,12 +1,12 @@
 # Task 007: Implement Public API + Integration Tests
 
-**Status:** todo
+**Status:** done
 **Priority:** high
 **Assigned:** unassigned
 **Blocked by:** task-006
 **Effort:** M
 **Created:** 2026-05-30
-**Completed:**
+**Completed:** 2026-05-31
 
 ## Description
 

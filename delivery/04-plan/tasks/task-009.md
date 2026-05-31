@@ -1,12 +1,12 @@
 # Task 009: Finalize Packaging and README
 
-**Status:** todo
+**Status:** done
 **Priority:** medium
 **Assigned:** unassigned
 **Blocked by:** task-007
 **Effort:** S
 **Created:** 2026-05-30
-**Completed:**
+**Completed:** 2026-05-31
 
 ## Description
 
