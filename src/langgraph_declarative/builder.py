@@ -3,10 +3,12 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Callable
 
 from langgraph.graph import END, START, StateGraph
 from langgraph.graph.state import CompiledStateGraph
 
+from langgraph_declarative.errors import ConfigValidationError
 from langgraph_declarative.loader import load_yaml
 from langgraph_declarative.registry import Registry
 from langgraph_declarative.schema import EdgeConfig, GraphConfig, NodeConfig, cross_validate, validate_config
@@ -69,7 +71,10 @@ class GraphBuilder:
                         k: self._resolve_sentinel(v)
                         for k, v in edge.targets.items()
                     }
-                    graph.add_conditional_edges(source, router_fn, path_map)
+                    wrapped = self._wrap_mapped_router(
+                        router_fn, edge.path, set(edge.targets.keys())
+                    )
+                    graph.add_conditional_edges(source, wrapped, path_map)
                 else:
                     # Dynamic routing (Send): no path_map
                     graph.add_conditional_edges(source, router_fn)
@@ -80,6 +85,26 @@ class GraphBuilder:
             else:
                 # Simple edge
                 graph.add_edge(source, self._resolve_sentinel(edge.target))
+
+    def _wrap_mapped_router(
+        self, router_fn: Callable, router_name: str, allowed_keys: set[str]
+    ) -> Callable:
+        """Wrap a router function to validate its return value against allowed keys."""
+        def _validated_router(state):
+            result = router_fn(state)
+            if not isinstance(result, str):
+                raise ConfigValidationError(
+                    f"Router '{router_name}' returned {type(result).__name__}, "
+                    f"expected str. Mapped routing requires a string key."
+                )
+            if result not in allowed_keys:
+                sorted_keys = ", ".join(f"'{k}'" for k in sorted(allowed_keys))
+                raise ConfigValidationError(
+                    f"Router '{router_name}' returned unmapped key '{result}'. "
+                    f"Allowed keys: {sorted_keys}."
+                )
+            return result
+        return _validated_router
 
     def _resolve_sentinel(self, name: str) -> str:
         """Map "START"/"END" strings to LangGraph constants, pass others through."""

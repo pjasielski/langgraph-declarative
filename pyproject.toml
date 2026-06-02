@@ -35,8 +35,8 @@ dev = [
 ]
 
 [project.urls]
-Repository = "https://github.com/piotr/langgraph-declarative"
-Homepage = "https://github.com/piotr/langgraph-declarative"
+Repository = "https://github.com/pjasielski/langgraph-declarative"
+Homepage = "https://github.com/pjasielski/langgraph-declarative"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/langgraph_declarative"]

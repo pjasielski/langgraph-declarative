@@ -12,7 +12,7 @@ from langgraph.graph import MessagesState, END, START
 from langgraph.graph.state import CompiledStateGraph
 
 from langgraph_declarative.builder import GraphBuilder
-from langgraph_declarative.errors import NodeNotFoundError
+from langgraph_declarative.errors import ConfigValidationError, NodeNotFoundError
 from langgraph_declarative.registry import Registry
 from langgraph_declarative.schema import validate_config
 
@@ -214,3 +214,72 @@ class TestCustomStateClass:
     def test_default_state_is_messages_state(self):
         builder = GraphBuilder(Registry())
         assert builder.state_class is MessagesState
+
+
+# --- Mapped routing validation ---
+
+
+class TestMappedRoutingValidation:
+    def _build_conditional_graph(self, router_fn):
+        """Helper: build a graph with a mapped conditional edge using the given router."""
+        reg = Registry()
+
+        @reg.node("classify")
+        def classify(state):
+            return {"messages": [{"role": "assistant", "content": "classified"}]}
+
+        @reg.node("positive")
+        def positive(state):
+            return {"messages": [{"role": "assistant", "content": "pos"}]}
+
+        @reg.node("negative")
+        def negative(state):
+            return {"messages": [{"role": "assistant", "content": "neg"}]}
+
+        reg._routers["test_router"] = router_fn
+
+        raw = {
+            "nodes": [
+                {"name": "classifier", "function": "classify"},
+                {"name": "handle_pos", "function": "positive"},
+                {"name": "handle_neg", "function": "negative"},
+            ],
+            "edges": [
+                {"source": "START", "target": "classifier"},
+                {
+                    "source": "classifier",
+                    "path": "test_router",
+                    "targets": {"pos": "handle_pos", "neg": "handle_neg"},
+                },
+                {"source": "handle_pos", "target": "END"},
+                {"source": "handle_neg", "target": "END"},
+            ],
+        }
+        config = validate_config(raw)
+        builder = GraphBuilder(reg)
+        return builder.build(config)
+
+    def test_unmapped_key_raises(self):
+        def bad_router(state):
+            return "unknown_key"
+
+        graph = self._build_conditional_graph(bad_router)
+        with pytest.raises(ConfigValidationError, match="unmapped key 'unknown_key'"):
+            graph.invoke({"messages": [{"role": "user", "content": "hi"}]})
+
+    def test_non_string_return_raises(self):
+        def bad_router(state):
+            return ["pos", "neg"]
+
+        graph = self._build_conditional_graph(bad_router)
+        with pytest.raises(ConfigValidationError, match="returned list, expected str"):
+            graph.invoke({"messages": [{"role": "user", "content": "hi"}]})
+
+    def test_valid_mapped_key_works(self):
+        def good_router(state):
+            return "pos"
+
+        graph = self._build_conditional_graph(good_router)
+        result = graph.invoke({"messages": [{"role": "user", "content": "hi"}]})
+        contents = [m.content for m in result["messages"]]
+        assert "pos" in contents

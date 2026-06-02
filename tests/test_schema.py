@@ -125,6 +125,14 @@ class TestValidateConfig:
         with pytest.raises(ConfigValidationError, match="neither 'target' nor 'path'"):
             validate_config(raw)
 
+    def test_empty_targets_raises(self):
+        raw = {
+            "nodes": [{"name": "a", "function": "fn_a"}],
+            "edges": [{"source": "a", "path": "my_router", "targets": {}}],
+        }
+        with pytest.raises(ConfigValidationError, match="empty 'targets' map"):
+            validate_config(raw)
+
     def test_duplicate_node_names_raises(self):
         raw = {
             "nodes": [

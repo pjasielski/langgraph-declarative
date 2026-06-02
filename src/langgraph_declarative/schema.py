@@ -52,6 +52,11 @@ class EdgeConfig(BaseModel):
             raise ValueError(
                 f"Edge from '{self.source}' has 'targets' without 'path'"
             )
+        if self.targets is not None and len(self.targets) == 0:
+            raise ValueError(
+                f"Edge from '{self.source}' has empty 'targets' map — "
+                "provide at least one routing key"
+            )
         return self
 
 

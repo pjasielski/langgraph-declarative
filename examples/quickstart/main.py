@@ -1,5 +1,7 @@
 """Quickstart: build a simple linear graph from YAML."""
 
+from pathlib import Path
+
 from langgraph_declarative import Registry, build_graph
 
 # 1. Create a registry and register your node functions
@@ -19,7 +21,7 @@ def respond(state):
 
 
 # 2. Build the graph from YAML + registry
-graph = build_graph("workflow.yaml", registry)
+graph = build_graph(Path(__file__).with_name("workflow.yaml"), registry)
 
 # 3. Invoke the graph
 result = graph.invoke({"messages": [{"role": "user", "content": "Hi there"}]})

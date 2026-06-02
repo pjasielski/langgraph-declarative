@@ -1,5 +1,7 @@
 """Conditional routing: route messages to different handlers based on intent."""
 
+from pathlib import Path
+
 from langgraph_declarative import Registry, build_graph
 
 registry = Registry()
@@ -54,7 +56,7 @@ def intent_router(state):
 
 # --- Run ---
 
-graph = build_graph("workflow.yaml", registry)
+graph = build_graph(Path(__file__).with_name("workflow.yaml"), registry)
 
 # Try different inputs to see different paths
 for user_msg in ["What is LangGraph?", "This is broken!", "Hello there"]:
