@@ -43,3 +43,15 @@ class TestLoadYaml:
         lst.write_text("- item1\n- item2\n", encoding="utf-8")
         with pytest.raises(ConfigLoadError, match="Expected a YAML mapping"):
             load_yaml(lst)
+
+    def test_empty_file_raises(self, tmp_path):
+        empty = tmp_path / "empty.yaml"
+        empty.write_text("", encoding="utf-8")
+        with pytest.raises(ConfigLoadError, match="Expected a YAML mapping"):
+            load_yaml(empty)
+
+    def test_whitespace_only_file_raises(self, tmp_path):
+        ws = tmp_path / "whitespace.yaml"
+        ws.write_text("   \n\n  \n", encoding="utf-8")
+        with pytest.raises(ConfigLoadError, match="Expected a YAML mapping"):
+            load_yaml(ws)

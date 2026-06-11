@@ -1,0 +1,16 @@
+nodes:
+  - name: "task_splitter"
+    function: "split_tasks"
+  - name: "worker"
+    function: "process_task"
+
+edges:
+  - source: "START"
+    target: "task_splitter"
+
+  # Dynamic routing: router returns Send objects — number of targets decided at runtime
+  - source: "task_splitter"
+    path: "dispatch_tasks"
+
+  - source: "worker"
+    target: "END"

@@ -223,6 +223,75 @@ class TestFullFeatured:
 # ---------------------------------------------------------------------------
 
 
+class TestCustomStateEndToEnd:
+    """Verify build_graph works with a non-MessagesState TypedDict through the full pipeline."""
+
+    def test_custom_typed_dict_state(self, tmp_path):
+        yaml_content = """
+nodes:
+  - name: "double"
+    function: "double_fn"
+  - name: "add_ten"
+    function: "add_ten_fn"
+
+edges:
+  - source: "START"
+    target: "double"
+  - source: "double"
+    target: "add_ten"
+  - source: "add_ten"
+    target: "END"
+"""
+        yaml_file = tmp_path / "custom.yaml"
+        yaml_file.write_text(yaml_content, encoding="utf-8")
+
+        class MathState(TypedDict):
+            value: int
+
+        reg = Registry()
+
+        @reg.node("double_fn")
+        def double_fn(state):
+            return {"value": state["value"] * 2}
+
+        @reg.node("add_ten_fn")
+        def add_ten_fn(state):
+            return {"value": state["value"] + 10}
+
+        graph = build_graph(yaml_file, reg, state_class=MathState)
+        result = graph.invoke({"value": 5})
+        assert result["value"] == 20  # (5 * 2) + 10
+
+
+class TestMinimalGraph:
+    """Boundary case: the smallest possible valid graph."""
+
+    def test_single_node_graph(self, tmp_path):
+        yaml_content = """
+nodes:
+  - name: "passthrough"
+    function: "noop"
+
+edges:
+  - source: "START"
+    target: "passthrough"
+  - source: "passthrough"
+    target: "END"
+"""
+        yaml_file = tmp_path / "minimal.yaml"
+        yaml_file.write_text(yaml_content, encoding="utf-8")
+
+        reg = Registry()
+
+        @reg.node("noop")
+        def noop(state):
+            return {"values": ["visited"]}
+
+        graph = build_graph(yaml_file, reg, state_class=CounterState)
+        result = graph.invoke({"values": []})
+        assert result["values"] == ["visited"]
+
+
 class TestBuildGraphConvenience:
     def test_import_from_package(self):
         """Public API is importable from the top-level package."""

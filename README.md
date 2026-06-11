@@ -180,22 +180,26 @@ langgraph-declarative/
 │   ├── test_schema.py
 │   ├── test_integration.py
 │   └── fixtures/                # Sample YAML files for tests
-├── examples/
-│   ├── quickstart/
-│   └── conditional_routing/
+├── examples/                  # Runnable examples (see examples/README.md)
+│   ├── quickstart/            # Linear graph
+│   ├── fan_out/               # Parallel branches
+│   ├── conditional_routing/   # Mapped routing
+│   ├── dynamic_routing/       # Send-based fan-out
+│   └── custom_state/          # Non-MessagesState workflow
 ├── pyproject.toml
-├── TODO.md                      # Roadmap: v1.1, v2, ideas
+├── ROADMAP.md                   # Roadmap: v1.1, v2, ideas
+├── TODO.md                      # Working backlog
 ├── LICENSE                      # MIT
 └── CHANGELOG.md
 ```
 
 ## Roadmap
 
-See [TODO.md](TODO.md) for the full backlog.
+See [ROADMAP.md](ROADMAP.md) for the full roadmap including v1.1, v2, and future ideas.
 
-- **v1** (current): Registry, builder, conditional edges, validation, packaging
-- **v1.1**: State declaration in YAML, auto-Mermaid generation, JSON Schema for IDE support
-- **v2**: Subgraph composition, tool/LLM config in YAML, database-driven graphs
+- **v1** (shipped): Registry, builder, all edge types, validation, packaging
+- **v1.1** (next): State-in-YAML, auto-Mermaid, JSON Schema, `match:` routing
+- **v2** (future): Subgraph composition, tool/LLM config, database sources
 
 ## Requirements
 

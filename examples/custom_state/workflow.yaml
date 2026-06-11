@@ -1,0 +1,20 @@
+nodes:
+  - name: "ingest"
+    function: "ingest_data"
+  - name: "validate"
+    function: "validate_data"
+  - name: "transform"
+    function: "transform_data"
+
+edges:
+  - source: "START"
+    target: "ingest"
+  - source: "ingest"
+    target: "validate"
+  - source: "validate"
+    path: "validation_router"
+    targets:
+      valid: "transform"
+      invalid: "ingest"
+  - source: "transform"
+    target: "END"

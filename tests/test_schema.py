@@ -144,6 +144,30 @@ class TestValidateConfig:
         with pytest.raises(ConfigValidationError, match="Duplicate node name: 'dup'"):
             validate_config(raw)
 
+    def test_extra_unknown_fields_are_ignored(self):
+        raw = {
+            "nodes": [{"name": "a", "function": "fn_a", "description": "extra field"}],
+            "edges": [{"source": "START", "target": "a", "label": "also extra"}],
+            "metadata": {"version": "1.0"},
+        }
+        config = validate_config(raw)
+        assert len(config.nodes) == 1
+        assert len(config.edges) == 1
+
+    def test_nodes_only_no_edges_raises(self):
+        raw = {
+            "nodes": [{"name": "a", "function": "fn_a"}],
+        }
+        with pytest.raises(ConfigValidationError):
+            validate_config(raw)
+
+    def test_edges_only_no_nodes_raises(self):
+        raw = {
+            "edges": [{"source": "START", "target": "END"}],
+        }
+        with pytest.raises(ConfigValidationError):
+            validate_config(raw)
+
 
 # --- cross_validate ---
 

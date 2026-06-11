@@ -1,0 +1,49 @@
+# Roadmap
+
+## v1 (shipped)
+
+Core library: define LangGraph graphs in YAML, compile with one line of Python.
+
+- **Registry** with `@registry.node()` and `@registry.router()` decorators
+- **All edge types:** simple, parallel fan-out, conditional (mapped routing), dynamic (Send)
+- **YAML schema validation** with Pydantic — catches errors before compilation
+- **Actionable error messages** with typo detection and available-name suggestions
+- **`build_graph()` convenience function** — one-line compilation defaulting to `MessagesState`
+- **`GraphBuilder` class** for power users who need control over state class and compilation
+- **Test suite** — 77 tests covering all modules, edge types, and error paths
+- **Runnable examples** — quickstart (linear graph) and conditional routing
+
+## v1.1 (next)
+
+Extending the core with features that don't change the architecture.
+
+| Feature | What it enables |
+|---------|----------------|
+| **State declaration in YAML** | Define state fields, types, and reducers in the YAML file instead of writing a Python state class. Ported from a production model factory (~250 lines). |
+| **Auto-Mermaid generation** | Generate visual graph diagrams by exposing LangGraph's `.draw_mermaid()` after compilation. |
+| **JSON Schema for YAML files** | Publish a schema so IDEs provide autocomplete and validation when editing workflow YAML. Leverages Pydantic's built-in JSON Schema export. |
+| **`match:` routing syntax** | Simple value-matching routing in YAML (`match: "state.field"` + `targets:`) without writing a Python router function. No `eval()` — dict lookup only. |
+
+## v2 (future)
+
+Larger features that extend what the library can express.
+
+| Feature | What it enables |
+|---------|----------------|
+| **Subgraph composition** | `subgraph: "file.yaml"` in a node definition compiles and embeds a sub-graph. Enables modular, multi-file workflows. |
+| **Tool configuration in YAML** | Reference LangChain or MCP tools by name in the YAML file, wired to nodes automatically. |
+| **LLM configuration per node** | Specify model, temperature, and other LLM parameters per node in YAML. Nodes get a pre-configured LLM without manual setup. |
+| **Database-driven graph source** | Load graph definitions from a database instead of YAML files. Enables runtime workflow management without file deployments. |
+| **LangGraph Template packaging** | Publish as an official LangGraph Template for `langgraph new` scaffolding. |
+| **Cross-file node references** | Import and reuse node/router definitions across multiple YAML workflow files. |
+
+## Ideas (unvalidated)
+
+These are possibilities, not commitments. They may or may not make sense after real-world usage.
+
+- **Graph diffing** — compare two YAML files and report topology changes
+- **Hot-reload** — watch a YAML file and recompile the graph on change
+- **CLI tool** — `lgd validate workflow.yaml`, `lgd visualize workflow.yaml`
+- **YAML include/import** — shared node definitions across workflows
+- **Graph versioning** — run A/B tests between YAML workflow variants
+- **Export to LangGraph Studio format**

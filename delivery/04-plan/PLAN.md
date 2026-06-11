@@ -1,16 +1,18 @@
-# Implementation Plan: langgraph-declarative v1
+# Implementation Plan: langgraph-declarative
 
-**Date:** 2026-05-30
+**Date:** 2026-05-30 (updated 2026-06-11)
 **SDD:** delivery/03-design/SDD.md
 **PRD:** delivery/02-prd/PRD.md
-**Total tasks:** 9
-**Estimated total effort:** M (library ~400 LOC, tests ~800 LOC)
+**Total tasks:** 13 (9 v1 done + 4 post-v1)
+**V1 status:** Complete — 77 tests passing, 2 examples, package builds
 
 ---
 
 ## Overview
 
-9 tasks covering scaffold, 5 library modules, integration tests, examples, and packaging. The library is deliberately small — the plan reflects that. Each task produces a working, testable increment.
+**V1 (tasks 001-009):** Complete. All modules implemented, tested, packaged.
+
+**Post-v1 (tasks 010-013):** Expand examples to cover all edge types, add ROADMAP.md for public visibility into future scope, and add edge-case tests discovered after v1 shipped.
 
 ---
 
@@ -87,3 +89,38 @@ Integration tests (task-007) exercise the full pipeline with real LangGraph grap
 - Tasks are sized for single-session agentic execution (pick up task, implement, test, done)
 - The builder (task-006) is the largest task as it orchestrates all other modules
 - Examples (task-008) serve as additional integration validation
+
+---
+
+## Post-v1 Tasks
+
+| Task | Title | Effort | Priority | Depends On |
+|------|-------|--------|----------|------------|
+| 010 | Add fan-out and Send examples | S | medium | 007 (done) |
+| 011 | Add custom state example | S | medium | 007 (done) |
+| 012 | Create ROADMAP.md | S | medium | — |
+| 013 | Edge-case tests and hardening | S | medium | 007 (done) |
+
+### Dependency Graph (post-v1)
+
+```
+(all v1 tasks done)
+     │
+     ├── task-010 (fan-out + Send examples)
+     ├── task-011 (custom state example)
+     ├── task-012 (ROADMAP.md)
+     └── task-013 (edge-case tests)
+```
+
+All 4 tasks are independent and can run in parallel.
+
+### Test Additions (task-013)
+
+| Area | What to test | Why |
+|------|-------------|-----|
+| Builder | Graph with only START→END (minimal) | Boundary case: no user nodes |
+| Builder | Node registered but never used in edges | Unreachable node detection / warning |
+| Integration | Custom state class with non-messages fields | Confirms state_class override works end-to-end |
+| Schema | YAML with extra unknown fields | Strict vs permissive parsing behavior |
+| Loader | Empty YAML file | Edge case: file exists but has no content |
+| Loader | YAML with only nodes, no edges | Structural boundary |
