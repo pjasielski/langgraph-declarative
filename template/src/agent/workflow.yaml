@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/pjasielski/langgraph-declarative/main/schema/workflow.schema.json
+#
+# The workflow topology lives here — node logic lives in nodes.py.
+# Edit this file to rewire the graph without touching Python code.
+
+nodes:
+  - name: "understand"
+    function: "understand_request"
+  - name: "respond"
+    function: "generate_response"
+  - name: "finalize"
+    function: "finalize_answer"
+
+edges:
+  - source: "START"
+    target: "understand"
+  - source: "understand"
+    target: "respond"
+  - source: "respond"
+    target: "finalize"
+  - source: "finalize"
+    target: "END"

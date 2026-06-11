@@ -1,0 +1,25 @@
+state:
+  - name: messages
+    type: list
+    reducer: add_messages
+  - name: summary
+    type: str
+  - name: steps
+    type: list[str]
+    reducer: append
+  - name: counter
+    type: int
+
+nodes:
+  - name: "summarize"
+    function: "summarize_fn"
+  - name: "finish"
+    function: "finish_fn"
+
+edges:
+  - source: "START"
+    target: "summarize"
+  - source: "summarize"
+    target: "finish"
+  - source: "finish"
+    target: "END"

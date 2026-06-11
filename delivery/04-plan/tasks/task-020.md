@@ -1,23 +1,23 @@
 # Task 020: LLM Configuration per Node
-**Status:** todo
+**Status:** done
 **Priority:** medium
 **Assigned:** unassigned
 **Blocked by:** —
 **Effort:** M
 **Created:** 2026-06-11
-**Completed:**
+**Completed:** 2026-06-11
 
 ## Description
 Allow each node in YAML to specify LLM parameters (model, temperature, etc.). Nodes receive a pre-configured LLM instance without requiring manual setup in Python. Supports the common pattern where different nodes need different models or settings.
 
 ## Acceptance Criteria
-- [ ] `llm:` section on node definitions in YAML
-- [ ] Supported fields: `model`, `temperature`, `max_tokens`, `provider` (at minimum)
-- [ ] LLM instance created at build time and passed to the node function
-- [ ] Node functions opt in via a parameter (e.g., `def my_node(state, llm=None)`)
-- [ ] Default LLM config at graph level, overridable per node
-- [ ] Provider support: at least `openai` and `anthropic` via `langchain_openai`/`langchain_anthropic`
-- [ ] Tests: LLM config parsing, per-node override, missing provider error
+- [x] `llm:` section on node definitions in YAML
+- [x] Supported fields: `model`, `temperature`, `max_tokens`, `provider` (at minimum)
+- [x] LLM instance created at build time and passed to the node function
+- [x] Node functions opt in via a parameter (e.g., `def my_node(state, llm=None)`)
+- [x] Default LLM config at graph level, overridable per node
+- [x] Provider support: at least `openai` and `anthropic` via `langchain_openai`/`langchain_anthropic`
+- [x] Tests: LLM config parsing, per-node override, missing provider error
 
 ## Files
 - `src/langgraph_declarative/schema.py` (add `LLMConfig` model, extend NodeConfig)

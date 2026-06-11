@@ -1,0 +1,322 @@
+{
+  "$defs": {
+    "EdgeConfig": {
+      "description": "A single edge declaration with validation rules.\n\nExactly one of ``target``, ``path``, or ``match`` must be provided.\n``targets`` (the path_map) is required with ``match`` and optional\nwith ``path``.",
+      "properties": {
+        "source": {
+          "title": "Source",
+          "type": "string"
+        },
+        "target": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Target"
+        },
+        "path": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Path"
+        },
+        "match": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Match"
+        },
+        "targets": {
+          "anyOf": [
+            {
+              "additionalProperties": {
+                "type": "string"
+              },
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Targets"
+        }
+      },
+      "required": [
+        "source"
+      ],
+      "title": "EdgeConfig",
+      "type": "object"
+    },
+    "ImportConfig": {
+      "description": "A cross-file import: pull node definitions from another YAML file.",
+      "properties": {
+        "file": {
+          "title": "File",
+          "type": "string"
+        },
+        "nodes": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Nodes"
+        }
+      },
+      "required": [
+        "file"
+      ],
+      "title": "ImportConfig",
+      "type": "object"
+    },
+    "LLMConfig": {
+      "description": "LLM parameters, usable at graph level (default) or per node (override).",
+      "properties": {
+        "provider": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Provider"
+        },
+        "model": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Model"
+        },
+        "temperature": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Temperature"
+        },
+        "max_tokens": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Max Tokens"
+        }
+      },
+      "title": "LLMConfig",
+      "type": "object"
+    },
+    "NodeConfig": {
+      "description": "A single node declaration.\n\nExactly one of ``function`` (registered function reference) or\n``subgraph`` (path to another YAML workflow file) must be provided.",
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "function": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Function"
+        },
+        "subgraph": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Subgraph"
+        },
+        "llm": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LLMConfig"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "tools": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tools"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "title": "NodeConfig",
+      "type": "object"
+    },
+    "StateFieldConfig": {
+      "description": "A single state field declaration from the YAML ``state:`` section.",
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "type": {
+          "title": "Type",
+          "type": "string"
+        },
+        "default": {
+          "anyOf": [
+            {},
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Default"
+        },
+        "reducer": {
+          "default": "replace",
+          "title": "Reducer",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "type"
+      ],
+      "title": "StateFieldConfig",
+      "type": "object"
+    }
+  },
+  "description": "Top-level validated graph configuration.",
+  "properties": {
+    "nodes": {
+      "items": {
+        "$ref": "#/$defs/NodeConfig"
+      },
+      "title": "Nodes",
+      "type": "array"
+    },
+    "edges": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/EdgeConfig"
+      },
+      "title": "Edges",
+      "type": "array"
+    },
+    "state": {
+      "anyOf": [
+        {
+          "items": {
+            "$ref": "#/$defs/StateFieldConfig"
+          },
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "State"
+    },
+    "llm": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/LLMConfig"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "imports": {
+      "anyOf": [
+        {
+          "items": {
+            "$ref": "#/$defs/ImportConfig"
+          },
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Imports"
+    }
+  },
+  "required": [
+    "nodes"
+  ],
+  "title": "langgraph-declarative workflow",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}

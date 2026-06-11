@@ -96,7 +96,9 @@ class TestValidateConfig:
             "nodes": [{"name": "a", "function": "fn_a"}],
             "edges": [{"source": "a"}],
         }
-        with pytest.raises(ConfigValidationError, match="neither 'target' nor 'path'"):
+        with pytest.raises(
+            ConfigValidationError, match="none of 'target', 'path', or 'match'"
+        ):
             validate_config(raw)
 
     def test_both_target_and_path_raises(self):
@@ -104,7 +106,7 @@ class TestValidateConfig:
             "nodes": [{"name": "a", "function": "fn_a"}],
             "edges": [{"source": "a", "target": "a", "path": "router"}],
         }
-        with pytest.raises(ConfigValidationError, match="both 'target' and 'path'"):
+        with pytest.raises(ConfigValidationError, match="mutually exclusive"):
             validate_config(raw)
 
     def test_targets_without_path_raises(self):
@@ -122,7 +124,9 @@ class TestValidateConfig:
             "nodes": [{"name": "a", "function": "fn_a"}],
             "edges": [{"source": "a", "targets": {"x": "a"}}],
         }
-        with pytest.raises(ConfigValidationError, match="neither 'target' nor 'path'"):
+        with pytest.raises(
+            ConfigValidationError, match="none of 'target', 'path', or 'match'"
+        ):
             validate_config(raw)
 
     def test_empty_targets_raises(self):
@@ -154,12 +158,13 @@ class TestValidateConfig:
         assert len(config.nodes) == 1
         assert len(config.edges) == 1
 
-    def test_nodes_only_no_edges_raises(self):
+    def test_nodes_only_no_edges_allowed(self):
+        # v2: edges are optional so shared-node files (imports) can validate.
         raw = {
             "nodes": [{"name": "a", "function": "fn_a"}],
         }
-        with pytest.raises(ConfigValidationError):
-            validate_config(raw)
+        config = validate_config(raw)
+        assert config.edges == []
 
     def test_edges_only_no_nodes_raises(self):
         raw = {

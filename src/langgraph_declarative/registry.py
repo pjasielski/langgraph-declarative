@@ -8,20 +8,22 @@ from typing import Any
 from langgraph_declarative.errors import (
     NodeNotFoundError,
     RouterNotFoundError,
+    ToolNotFoundError,
     format_not_found,
 )
 
 
 class Registry:
-    """Store and look up node/router functions by name.
+    """Store and look up node/router/tool functions by name.
 
-    Maintains two separate namespaces so that a typo in a YAML ``path:``
+    Maintains separate namespaces so that a typo in a YAML ``path:``
     field cannot silently resolve to a node function (and vice-versa).
     """
 
     def __init__(self) -> None:
         self._nodes: dict[str, Callable] = {}
         self._routers: dict[str, Callable] = {}
+        self._tools: dict[str, Any] = {}
 
     # -- decorators --
 
@@ -59,6 +61,24 @@ class Registry:
 
         return decorator
 
+    def tool(self, name: str) -> Callable:
+        """Decorator: register a tool (LangChain tool object or plain callable).
+
+        >>> registry = Registry()
+        >>> @registry.tool("calculator")
+        ... def calculator(expression: str) -> str:
+        ...     '''Evaluate a math expression.'''
+        ...     return "42"
+        """
+
+        def decorator(obj: Any) -> Any:
+            if name in self._tools:
+                raise ValueError(f"Duplicate tool name: '{name}'")
+            self._tools[name] = obj
+            return obj
+
+        return decorator
+
     # -- lookups --
 
     def get_node(self, name: str) -> Callable:
@@ -79,6 +99,15 @@ class Registry:
                 format_not_found("router", name, list(self._routers))
             ) from None
 
+    def get_tool(self, name: str) -> Any:
+        """Look up a tool by name. Raises ``ToolNotFoundError`` with suggestions."""
+        try:
+            return self._tools[name]
+        except KeyError:
+            raise ToolNotFoundError(
+                format_not_found("tool", name, list(self._tools))
+            ) from None
+
     # -- listing --
 
     def list_nodes(self) -> list[str]:
@@ -88,3 +117,7 @@ class Registry:
     def list_routers(self) -> list[str]:
         """Return all registered router names."""
         return list(self._routers)
+
+    def list_tools(self) -> list[str]:
+        """Return all registered tool names."""
+        return list(self._tools)

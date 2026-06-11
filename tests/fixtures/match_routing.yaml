@@ -1,0 +1,32 @@
+state:
+  - name: messages
+    type: list
+    reducer: add_messages
+  - name: category
+    type: str
+
+nodes:
+  - name: "classifier"
+    function: "classify"
+  - name: "billing_agent"
+    function: "billing"
+  - name: "tech_agent"
+    function: "tech"
+  - name: "general_agent"
+    function: "general"
+
+edges:
+  - source: "START"
+    target: "classifier"
+  - source: "classifier"
+    match: "category"
+    targets:
+      billing: "billing_agent"
+      technical: "tech_agent"
+      default: "general_agent"
+  - source: "billing_agent"
+    target: "END"
+  - source: "tech_agent"
+    target: "END"
+  - source: "general_agent"
+    target: "END"

@@ -1,22 +1,22 @@
 # Task 021: Database-Driven Graph Source
-**Status:** todo
+**Status:** done
 **Priority:** low
 **Assigned:** unassigned
 **Blocked by:** task-014
 **Effort:** L
 **Created:** 2026-06-11
-**Completed:**
+**Completed:** 2026-06-11
 
 ## Description
 Add a loader that reads graph definitions from a database instead of YAML files, enabling runtime workflow management without file deployments. Leverages the existing loader abstraction (ADR-003).
 
 ## Acceptance Criteria
-- [ ] Pluggable loader interface formalized (protocol or ABC)
-- [ ] Database loader implementation for at least one backend (PostgreSQL or SQLite)
-- [ ] Graph definition stored as JSON/YAML text in a table
-- [ ] `build_graph_from_db(source_id, registry, ...)` convenience function
-- [ ] Version/revision tracking for stored graph definitions
-- [ ] Tests: load from DB, missing source error, version handling
+- [x] Pluggable loader interface formalized (protocol or ABC)
+- [x] Database loader implementation for at least one backend (PostgreSQL or SQLite)
+- [x] Graph definition stored as JSON/YAML text in a table
+- [x] `build_graph_from_db(source_id, registry, ...)` convenience function
+- [x] Version/revision tracking for stored graph definitions
+- [x] Tests: load from DB, missing source error, version handling
 
 ## Files
 - `src/langgraph_declarative/loader.py` (formalize loader protocol)

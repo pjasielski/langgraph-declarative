@@ -1,12 +1,31 @@
-"""YAML file loader — thin wrapper around PyYAML."""
+"""YAML file loader — thin wrapper around PyYAML — and the Loader protocol."""
 
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Protocol, runtime_checkable
 
 import yaml
 
 from langgraph_declarative.errors import ConfigLoadError
+
+
+@runtime_checkable
+class Loader(Protocol):
+    """Pluggable graph-definition source (ADR-003).
+
+    Implementations turn a *source* identifier (file path, database key, …)
+    into a raw config dict ready for ``validate_config``.
+    """
+
+    def load(self, source: str) -> dict: ...
+
+
+class YamlLoader:
+    """File-based ``Loader`` implementation wrapping :func:`load_yaml`."""
+
+    def load(self, source: str) -> dict:
+        return load_yaml(source)
 
 
 def load_yaml(path: str | Path) -> dict:

@@ -1,0 +1,15 @@
+imports:
+  - file: "shared_nodes.yaml"
+    nodes: ["error_handler"]
+
+nodes:
+  - name: "my_node"
+    function: "process"
+
+edges:
+  - source: "START"
+    target: "my_node"
+  - source: "my_node"
+    target: "error_handler"
+  - source: "error_handler"
+    target: "END"

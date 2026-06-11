@@ -1,0 +1,6 @@
+# Shared node definitions for cross-file imports — no edges needed.
+nodes:
+  - name: "error_handler"
+    function: "handle_error"
+  - name: "retry_node"
+    function: "retry_fn"

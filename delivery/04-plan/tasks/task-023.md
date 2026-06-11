@@ -1,22 +1,22 @@
 # Task 023: Cross-File Node References
-**Status:** todo
+**Status:** done
 **Priority:** low
 **Assigned:** unassigned
 **Blocked by:** task-018
 **Effort:** M
 **Created:** 2026-06-11
-**Completed:**
+**Completed:** 2026-06-11
 
 ## Description
 Allow YAML workflow files to import and reuse node/router definitions from other YAML files. Enables sharing common nodes (e.g., error handlers, logging nodes) across multiple workflows without duplicating registry setup.
 
 ## Acceptance Criteria
-- [ ] `imports:` section in YAML references other YAML files
-- [ ] Imported nodes available by name in the importing file's edges
-- [ ] Import resolution follows relative paths from the importing file
-- [ ] Circular imports detected and rejected with clear error
-- [ ] Name collisions between imported and local nodes caught with error
-- [ ] Tests: basic import, multi-file chain, circular detection, name collision
+- [x] `imports:` section in YAML references other YAML files
+- [x] Imported nodes available by name in the importing file's edges
+- [x] Import resolution follows relative paths from the importing file
+- [x] Circular imports detected and rejected with clear error
+- [x] Name collisions between imported and local nodes caught with error
+- [x] Tests: basic import, multi-file chain, circular detection, name collision
 
 ## Files
 - `src/langgraph_declarative/schema.py` (add `imports:` to GraphConfig)

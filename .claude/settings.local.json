@@ -7,7 +7,12 @@
       "Bash(python3 /Users/piotr/Projects/langgraph-declarative/examples/dynamic_routing/main.py)",
       "Bash(python3 /Users/piotr/Projects/langgraph-declarative/examples/custom_state/main.py)",
       "Bash(find /Users/piotr/.claude/projects/ -type d -name \"memory\" 2>/dev/null)",
-      "Read(//Users/piotr/.claude/projects/**)"
+      "Read(//Users/piotr/.claude/projects/**)",
+      "Skill(mae-do)",
+      "Bash(uv sync:*)",
+      "Bash(for ex in quickstart conditional_routing custom_state dynamic_routing fan_out)",
+      "Bash(do echo \"=== $ex ===\")",
+      "Bash(done)"
     ]
   }
 }

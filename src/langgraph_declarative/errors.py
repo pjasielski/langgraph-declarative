@@ -25,6 +25,10 @@ class RouterNotFoundError(DeclarativeError):
     """Router name not found in the registry."""
 
 
+class ToolNotFoundError(DeclarativeError):
+    """Tool name not found in the registry or via import path."""
+
+
 def suggest_similar(name: str, available: list[str], n: int = 3) -> list[str]:
     """Return up to *n* close matches for *name* from *available* names.
 

@@ -1,0 +1,21 @@
+llm:
+  provider: fake
+  model: fake-default
+  temperature: 0.7
+
+nodes:
+  - name: "chatter"
+    function: "chat_node"
+  - name: "summarizer"
+    function: "summarize_node"
+    llm:
+      model: fake-mini
+      temperature: 0
+
+edges:
+  - source: "START"
+    target: "chatter"
+  - source: "chatter"
+    target: "summarizer"
+  - source: "summarizer"
+    target: "END"

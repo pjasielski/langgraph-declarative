@@ -1,22 +1,22 @@
 # Task 015: Auto-Mermaid Generation
-**Status:** todo
+**Status:** done
 **Priority:** medium
 **Assigned:** unassigned
 **Blocked by:** —
 **Effort:** S
 **Created:** 2026-06-11
-**Completed:**
+**Completed:** 2026-06-11
 
 ## Description
 Expose LangGraph's built-in `.get_graph().draw_mermaid()` through a convenience function so users can generate visual graph diagrams from YAML without manually accessing the compiled graph internals.
 
 ## Acceptance Criteria
-- [ ] `draw_mermaid(path, registry, state_class=None)` convenience function added
-- [ ] `GraphBuilder.draw_mermaid(config)` method added for power users
-- [ ] Returns Mermaid-format string (same output as LangGraph's native method)
-- [ ] Optional `output_path` parameter writes to file (`.md` or `.mmd`)
-- [ ] Public API exported from `__init__.py`
-- [ ] Tests: output contains expected node names, edge structure matches YAML
+- [x] `draw_mermaid(path, registry, state_class=None)` convenience function added
+- [x] `GraphBuilder.draw_mermaid(config)` method added for power users
+- [x] Returns Mermaid-format string (same output as LangGraph's native method)
+- [x] Optional `output_path` parameter writes to file (`.md` or `.mmd`)
+- [x] Public API exported from `__init__.py`
+- [x] Tests: output contains expected node names, edge structure matches YAML
 
 ## Files
 - `src/langgraph_declarative/__init__.py` (add `draw_mermaid` function)

@@ -32,6 +32,13 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "pytest",
+    "jsonschema",
+]
+openai = [
+    "langchain-openai",
+]
+anthropic = [
+    "langchain-anthropic",
 ]
 
 [project.urls]

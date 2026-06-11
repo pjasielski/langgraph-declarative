@@ -1,0 +1,16 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "agent"
+version = "0.1.0"
+description = "A declarative LangGraph agent — workflow topology in YAML, logic in Python"
+requires-python = ">=3.10"
+dependencies = [
+    "langgraph>=0.2",
+    "langgraph-declarative",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/agent"]

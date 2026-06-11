@@ -1,11 +1,11 @@
 # Task 014: State Declaration in YAML
-**Status:** todo
+**Status:** done
 **Priority:** high
 **Assigned:** unassigned
 **Blocked by:** —
 **Effort:** L
 **Created:** 2026-06-11
-**Completed:**
+**Completed:** 2026-06-11
 
 ## Description
 Allow users to define state fields, types, and reducers directly in YAML instead of writing a Python state class. A `state:` section in the YAML file is compiled into an `Annotated` TypedDict at build time. When `state:` is present, it overrides the default `MessagesState` and any `state_class` parameter.
@@ -13,15 +13,15 @@ Allow users to define state fields, types, and reducers directly in YAML instead
 Ported from a production model factory (~250 lines). Core technique: dynamically create `typing.Annotated[type, reducer]` fields and assemble into a TypedDict subclass that LangGraph accepts as a state annotation.
 
 ## Acceptance Criteria
-- [ ] YAML `state:` section accepts fields with `name`, `type`, `default`, and `reducer`
-- [ ] Supported types: `str`, `int`, `float`, `bool`, `list`, `dict`, `list[str]`, `list[dict]`
-- [ ] Supported reducers: `add_messages`, `append`, `replace` (default)
-- [ ] Generated state class is a valid LangGraph state annotation
-- [ ] When `state:` is present, `state_class` parameter is ignored (with warning)
-- [ ] When `state:` is absent, behavior unchanged (backwards compatible)
-- [ ] Schema validation catches invalid type/reducer names with suggestions
-- [ ] New module `state_factory.py` (~100-150 lines)
-- [ ] Tests: valid state generation, type mapping, reducer wiring, invalid configs, integration
+- [x] YAML `state:` section accepts fields with `name`, `type`, `default`, and `reducer`
+- [x] Supported types: `str`, `int`, `float`, `bool`, `list`, `dict`, `list[str]`, `list[dict]`
+- [x] Supported reducers: `add_messages`, `append`, `replace` (default)
+- [x] Generated state class is a valid LangGraph state annotation
+- [x] When `state:` is present, `state_class` parameter is ignored (with warning)
+- [x] When `state:` is absent, behavior unchanged (backwards compatible)
+- [x] Schema validation catches invalid type/reducer names with suggestions
+- [x] New module `state_factory.py` (~100-150 lines)
+- [x] Tests: valid state generation, type mapping, reducer wiring, invalid configs, integration
 
 ## Files
 - `src/langgraph_declarative/state_factory.py` (new)
