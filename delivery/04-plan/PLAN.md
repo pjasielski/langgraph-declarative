@@ -3,7 +3,7 @@
 **Date:** 2026-05-30 (updated 2026-06-11)
 **SDD:** delivery/03-design/SDD.md
 **PRD:** delivery/02-prd/PRD.md
-**Total tasks:** 13 (9 v1 done + 4 post-v1)
+**Total tasks:** 23 (13 v1 done + 4 v1.1 + 6 v2)
 **V1 status:** Complete — 77 tests passing, 2 examples, package builds
 
 ---
@@ -113,6 +113,86 @@ Integration tests (task-007) exercise the full pipeline with real LangGraph grap
 ```
 
 All 4 tasks are independent and can run in parallel.
+
+---
+
+## v1.1 Tasks
+
+Extending the core with features that don't change the architecture. Estimated total effort: ~L (one large + one medium + two small).
+
+| Task | Title | Effort | Priority | Depends On | PRD |
+|------|-------|--------|----------|------------|-----|
+| 014 | State declaration in YAML | L | high | — | FR-14 |
+| 015 | Auto-Mermaid generation | S | medium | — | FR-15 |
+| 016 | JSON Schema for YAML files | S | medium | 014 | FR-16 |
+| 017 | Match routing syntax | M | medium | — | FR-18 |
+
+### Dependency Graph (v1.1)
+
+```
+(all v1 tasks done)
+     │
+     ├── task-014 (state in YAML) ──► task-016 (JSON Schema — needs state: in schema)
+     ├── task-015 (auto-Mermaid)
+     └── task-017 (match: routing)
+```
+
+Tasks 014, 015, and 017 can run in parallel. Task 016 is blocked by 014 because the JSON Schema should include the `state:` section.
+
+### Suggested Execution Order (v1.1)
+
+1. **task-014** (State in YAML) — largest task, enables task-016, high value
+2. **task-017** (Match routing) — medium effort, independent
+3. **task-015** (Auto-Mermaid) — small, independent
+4. **task-016** (JSON Schema) — small, depends on 014
+
+---
+
+## v2 Tasks
+
+Larger features that extend what the library can express. Estimated total effort: ~XL (one XL + two large + two medium + one small).
+
+| Task | Title | Effort | Priority | Depends On |
+|------|-------|--------|----------|------------|
+| 018 | Subgraph composition | XL | high | 014 |
+| 019 | Tool configuration in YAML | L | medium | 020 |
+| 020 | LLM configuration per node | M | medium | — |
+| 021 | Database-driven graph source | L | low | 014 |
+| 022 | LangGraph Template packaging | S | low | 018 |
+| 023 | Cross-file node references | M | low | 018 |
+
+### Dependency Graph (v2)
+
+```
+(v1.1 complete)
+     │
+     ├── task-018 (subgraphs) ──┬── task-022 (LangGraph Template)
+     │                          └── task-023 (cross-file refs)
+     │
+     ├── task-020 (LLM config) ──── task-019 (tool config)
+     │
+     └── task-021 (DB loader)
+```
+
+### Suggested Execution Order (v2)
+
+1. **task-020** (LLM config) — independent, unblocks task-019
+2. **task-018** (Subgraph composition) — largest v2 task, unblocks 022 + 023
+3. **task-019** (Tool config) — after 020
+4. **task-021** (DB loader) — independent
+5. **task-023** (Cross-file refs) — after 018
+6. **task-022** (LangGraph Template) — after 018, low priority
+
+### v2 Risks
+
+| Risk | Mitigation |
+|------|------------|
+| Subgraph state scoping complexity | Start with shared registry + isolated state; add state passing later |
+| LLM provider dependency sprawl | Make providers optional extras; lazy imports; clear error when missing |
+| DB loader schema migrations | Store graph config as JSON text, not normalized tables; version field |
+| Template registry coordination | Can ship template in repo first; coordinate with LangChain team later |
+
+---
 
 ### Test Additions (task-013)
 
