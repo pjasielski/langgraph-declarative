@@ -1,0 +1,22 @@
+# v2 feature: subgraph composition — a node can embed another YAML workflow.
+#
+# `subgraph:` takes a path relative to THIS file. The child is compiled
+# recursively and added as a single node. A node has either `function:` or
+# `subgraph:`, never both. Circular references are detected and rejected.
+nodes:
+  - name: "intro"
+    function: "intro_step"
+  - name: "research"
+    subgraph: "research_subgraph.yaml"
+  - name: "outro"
+    function: "outro_step"
+
+edges:
+  - source: "START"
+    target: "intro"
+  - source: "intro"
+    target: "research"
+  - source: "research"
+    target: "outro"
+  - source: "outro"
+    target: "END"

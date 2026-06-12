@@ -1,4 +1,12 @@
-"""Custom state: data processing pipeline without MessagesState."""
+"""Custom state: data processing pipeline without MessagesState.
+
+This example passes a hand-written Python TypedDict via `state_class=` — the
+v1 approach, still fully supported and the right choice when you need types
+or reducers beyond what YAML can express. Since v1.1 the same schema can be
+declared directly in YAML with a `state:` section (see examples/declared_state).
+Note: if the YAML declares `state:`, it wins over `state_class=` (a UserWarning
+is emitted).
+"""
 
 from __future__ import annotations
 

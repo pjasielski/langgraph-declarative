@@ -1,4 +1,10 @@
-"""Dynamic routing with Send: fan out to a variable number of workers at runtime."""
+"""Dynamic routing with Send: fan out to a variable number of workers at runtime.
+
+The TaskState TypedDict below could also be declared in YAML since v1.1
+(`state:` with `reducer: append` for the results field — see
+examples/declared_state). It stays in Python here to show the v1
+`state_class=` approach alongside Send-based routing.
+"""
 
 from __future__ import annotations
 

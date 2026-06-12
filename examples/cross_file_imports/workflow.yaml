@@ -1,0 +1,38 @@
+# v2 feature: cross-file imports — reuse node declarations across workflows.
+#
+# `imports:` merges node definitions from another YAML file (path relative to
+# this file) before validation, so imported names can be used in edges below.
+#   - `nodes: [...]` cherry-picks specific nodes; omit it to import all.
+#   - Name collisions with local nodes and circular imports are errors.
+state:
+  - name: "messages"
+    type: "list"
+    reducer: "add_messages"
+  - name: "status"
+    type: "str"
+
+imports:
+  - file: "shared_nodes.yaml"
+    nodes: ["error_handler"]   # selective import; drop this line to import every node
+
+nodes:
+  - name: "processor"
+    function: "process_order"
+  - name: "confirmation"
+    function: "confirm_order"
+
+edges:
+  - source: "START"
+    target: "processor"
+
+  # Route on the processing outcome (v1.1 match routing)
+  - source: "processor"
+    match: "status"
+    targets:
+      ok: "confirmation"
+      default: "error_handler"   # ← the imported node
+
+  - source: "confirmation"
+    target: "END"
+  - source: "error_handler"
+    target: "END"

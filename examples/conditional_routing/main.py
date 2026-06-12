@@ -1,4 +1,10 @@
-"""Conditional routing: route messages to different handlers based on intent."""
+"""Conditional routing: route messages to different handlers based on intent.
+
+A Python router function (@registry.router) gives you arbitrary routing
+logic. Since v1.1 there is a lighter alternative for the common case of
+routing on a single state field's value: `match:` routing, which needs no
+Python function at all (see examples/match_routing).
+"""
 
 from pathlib import Path
 

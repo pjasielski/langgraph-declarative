@@ -1,0 +1,9 @@
+# A library of reusable node declarations. Files like this need no edges —
+# they exist to be imported by other workflows (v2 cross-file imports).
+# The node *declarations* live here; the *functions* still come from the
+# registry of whichever workflow imports them.
+nodes:
+  - name: "error_handler"
+    function: "handle_error"
+  - name: "audit_logger"
+    function: "log_audit"
