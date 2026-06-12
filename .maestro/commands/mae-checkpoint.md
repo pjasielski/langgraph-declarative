@@ -23,12 +23,12 @@ If no arguments: prompt for a checkpoint name.
    - `DECISIONS.md` → count by status (confirmed / proposed / tentative / parked)
    - `OPEN_QUESTIONS.md` → count by priority
    - `delivery/04-plan/tasks/` → count by status (todo / in-progress / done / blocked)
-   - `sessions/` → current session name
+   - `.sessions/` → current session name
    - `maestro.toml` → project name
 
-2. Create checkpoint folder if needed: `sessions/{current-session}/checkpoints/`
+2. Create checkpoint folder if needed: `.sessions/{current-session}/checkpoints/`
 
-3. Save checkpoint file: `sessions/{current-session}/checkpoints/{YYYY-MM-DD}_{name}.md`
+3. Save checkpoint file: `.sessions/{current-session}/checkpoints/{YYYY-MM-DD}_{name}.md`
 
 ```markdown
 # Checkpoint: {name}

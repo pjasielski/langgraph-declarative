@@ -9,5 +9,5 @@ active = ["claude-code"]
 # Override per-command with -v or -c flags
 output_tier = "standard"
 
-# Uncomment to share sessions with team (remove sessions/ from .gitignore too):
+# Uncomment to share sessions with team (remove .sessions/ from .gitignore too):
 # share_sessions = true

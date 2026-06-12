@@ -20,7 +20,7 @@ $ARGUMENTS — optional sub-command: tasks, decisions, questions
 1. Read `HANDOFF.md` for current phase, blockers, recent changes
 2. Read `OPEN_QUESTIONS.md` and count questions by priority
 3. Read `WORKLOG.md` for last 3 entries
-4. Check `sessions/` for the latest session folder
+4. Check `.sessions/` for the latest session folder
 5. Check `delivery/04-plan/tasks/` for task counts by status
 6. Check `DECISIONS.md` for recent unsynced decisions
 

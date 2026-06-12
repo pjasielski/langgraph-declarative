@@ -12,7 +12,10 @@
       "Bash(uv sync:*)",
       "Bash(for ex in quickstart conditional_routing custom_state dynamic_routing fan_out)",
       "Bash(do echo \"=== $ex ===\")",
-      "Bash(done)"
+      "Bash(done)",
+      "Bash(gh repo *)",
+      "Bash(sed -i '' 's#| Sessions   | Committed to git | Gitignored                  |#| Sessions   | Gitignored \\(`.sessions/`, local-only\\) | Gitignored \\(`.sessions/`\\) |#' MAESTRO.md)",
+      "Bash(sed -i '' 's#| `.gitignore` | .sessions/ and notes/ NOT gitignored | .sessions/ and notes/ ARE gitignored |#| `.gitignore` | .sessions/ gitignored, notes/ NOT gitignored | .sessions/ and notes/ ARE gitignored |#' .maestro/commands/mae-init.md)"
     ]
   }
 }

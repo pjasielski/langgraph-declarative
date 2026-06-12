@@ -12,7 +12,7 @@ Save the current response (or a specified topic) to a Markdown file in the activ
 ## Behavior
 
 1. **Identify the active session folder:**
-   - Check `sessions/` for the highest-numbered session folder (e.g., `sessions/003-api-design/`)
+   - Check `.sessions/` for the highest-numbered session folder (e.g., `.sessions/003-api-design/`)
    - If no session folder exists, ask: "No active session found. Should I create one? What should I call it?"
 
 2. **Determine the file number:**

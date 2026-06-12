@@ -177,8 +177,8 @@ The explore report is a **living document** — running `explore doc` again repl
 
 ## Artifact Flow
 
-All explore artifacts → sessions/ (working material)
-Final report (`doc`) → sessions/ → user promotes to delivery/01-explore/
+All explore artifacts → .sessions/ (working material)
+Final report (`doc`) → .sessions/ → user promotes to delivery/01-explore/
 When ready → user runs `/mae-prd` to formalize requirements
 
 ## Rules

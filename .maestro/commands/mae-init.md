@@ -24,7 +24,7 @@ $ARGUMENTS — optional: project name, mode (solo/team)
 
    | Aspect | Solo | Team |
    |--------|------|------|
-   | `.gitignore` | sessions/ and notes/ NOT gitignored | sessions/ and notes/ ARE gitignored |
+   | `.gitignore` | .sessions/ gitignored, notes/ NOT gitignored | .sessions/ and notes/ ARE gitignored |
    | `WORKLOG.md` | No "Who" column | "Who" column added |
    | `maestro.toml` | `mode = "solo"` | `mode = "team"` |
 
@@ -36,7 +36,7 @@ $ARGUMENTS — optional: project name, mode (solo/team)
    ├── 03-design/
    └── 04-plan/
        └── tasks/
-   sessions/
+   .sessions/
    notes/
    templates/
    ```
@@ -89,7 +89,7 @@ $ARGUMENTS — optional: project name, mode (solo/team)
 
 9. In team mode: add to .gitignore:
    ```
-   sessions/
+   .sessions/
    notes/
    ```
 

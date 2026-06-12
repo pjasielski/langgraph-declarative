@@ -27,7 +27,7 @@ Break the design into actionable tasks.
 4. **Save report** to session folder
 
 ## Why tasks go directly to delivery/
-Task files are immediately actionable — they ARE the plan. Saving drafts to sessions/ adds friction with no safety benefit since tasks are small, easily edited, and meant to be picked up by `/mae-do`.
+Task files are immediately actionable — they ARE the plan. Saving drafts to .sessions/ adds friction with no safety benefit since tasks are small, easily edited, and meant to be picked up by `/mae-do`.
 
 ## Output Behaviors
 - Flag dependencies and blockers
