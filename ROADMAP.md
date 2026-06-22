@@ -13,7 +13,7 @@ Core library: define LangGraph graphs in YAML, compile with one line of Python.
 - **Test suite** — 77 tests covering all modules, edge types, and error paths
 - **Runnable examples** — quickstart (linear graph) and conditional routing
 
-## v1.1 (next)
+## v1.1 (shipped)
 
 Extending the core with features that don't change the architecture.
 
@@ -24,7 +24,7 @@ Extending the core with features that don't change the architecture.
 | **JSON Schema for YAML files** | Publish a schema so IDEs provide autocomplete and validation when editing workflow YAML. Leverages Pydantic's built-in JSON Schema export. |
 | **`match:` routing syntax** | Simple value-matching routing in YAML (`match: "state.field"` + `targets:`) without writing a Python router function. No `eval()` — dict lookup only. |
 
-## v2 (future)
+## v2 (shipped)
 
 Larger features that extend what the library can express.
 
@@ -36,6 +36,8 @@ Larger features that extend what the library can express.
 | **Database-driven graph source** | Load graph definitions from a database instead of YAML files. Enables runtime workflow management without file deployments. |
 | **LangGraph Template packaging** | Publish as an official LangGraph Template for `langgraph new` scaffolding. |
 | **Cross-file node references** | Import and reuse node/router definitions across multiple YAML workflow files. |
+
+> v1, v1.1, and v2 are internal milestone labels, not package version numbers. See [CHANGELOG.md](CHANGELOG.md) for package releases.
 
 ## Ideas (unvalidated)
 

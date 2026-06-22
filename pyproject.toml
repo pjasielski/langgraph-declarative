@@ -4,14 +4,15 @@ build-backend = "hatchling.build"
 
 [project]
 name = "langgraph-declarative"
-version = "0.1.0"
-description = "Compile YAML workflow definitions into LangGraph CompiledStateGraph objects"
+version = "0.2.0"
+description = "Declarative YAML workflow definitions for LangGraph — topology as config, logic in Python"
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.10"
 authors = [
-    { name = "Piotr" },
+    { name = "Piotr Jasielski", email = "piotr.jasielski@gmail.com" },
 ]
+keywords = ["langgraph", "langchain", "yaml", "workflow", "declarative", "agents"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
@@ -44,6 +45,8 @@ anthropic = [
 [project.urls]
 Repository = "https://github.com/pjasielski/langgraph-declarative"
 Homepage = "https://github.com/pjasielski/langgraph-declarative"
+Changelog = "https://github.com/pjasielski/langgraph-declarative/blob/main/CHANGELOG.md"
+Issues = "https://github.com/pjasielski/langgraph-declarative/issues"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/langgraph_declarative"]

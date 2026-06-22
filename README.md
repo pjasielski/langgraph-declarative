@@ -1,5 +1,7 @@
 # langgraph-declarative
 
+*Community project — not affiliated with or endorsed by LangChain. Built on top of [LangGraph](https://github.com/langchain-ai/langgraph).*
+
 Declarative graph definition for [LangGraph](https://github.com/langchain-ai/langgraph) — describe your workflow's **topology in YAML**, keep the **logic in Python**, and compile with one line of code.
 
 The library has three pieces:
@@ -169,7 +171,9 @@ delivery/                    # PRD, SDD, plan, reviews
 
 ## Status
 
-v1 (core), v1.1 (state-in-YAML, match routing, Mermaid, JSON Schema), and v2 (subgraphs, imports, LLM/tools, DB source, template) are implemented. See [ROADMAP.md](ROADMAP.md) for future ideas (graph diffing, hot-reload, CLI, …).
+All planned milestones are shipped: v1 (core), v1.1 (state-in-YAML, match routing, Mermaid, JSON Schema), and v2 (subgraphs, imports, LLM/tools, DB source, template). These are internal milestone labels, not package version numbers — see [CHANGELOG.md](CHANGELOG.md) for package versions.
+
+See [ROADMAP.md](ROADMAP.md) for future ideas (graph diffing, hot-reload, CLI, …).
 
 ## Requirements
 
