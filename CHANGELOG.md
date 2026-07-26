@@ -1,6 +1,6 @@
 # Changelog
 
-## v0.2.0 (2026-06-22)
+## v0.2.0 (2026-07-26)
 
 First public release — includes everything from milestones v1, v1.1, and v2.
 

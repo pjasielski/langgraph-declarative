@@ -1,12 +1,12 @@
 <div align="center">
 
-<img alt="langgraph-declarative" src="assets/logo.svg" width="440">
+<img alt="langgraph-declarative" src="https://raw.githubusercontent.com/pjasielski/langgraph-declarative/main/assets/logo.png" width="440">
 
 **Topology in YAML. Logic in Python. One line to compile.**
 
 [![CI](https://github.com/pjasielski/langgraph-declarative/actions/workflows/ci.yml/badge.svg)](https://github.com/pjasielski/langgraph-declarative/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/badge/python-3.10%2B-6366F1)](https://www.python.org/downloads/)
-[![License](https://img.shields.io/badge/license-MIT-2DD4BF)](LICENSE)
+[![License](https://img.shields.io/badge/license-MIT-2DD4BF)](https://github.com/pjasielski/langgraph-declarative/blob/main/LICENSE)
 
 <!-- Uncomment after the first PyPI release:
 [![PyPI](https://img.shields.io/pypi/v/langgraph-declarative?color=2DD4BF)](https://pypi.org/project/langgraph-declarative/)
@@ -15,7 +15,7 @@
 
 
 
-[Quickstart](#quickstart) · [Features](#features) · [YAML reference](#yaml-reference) · [Examples](examples/README.md) · [Roadmap](ROADMAP.md)
+[Quickstart](#quickstart) · [Features](#features) · [YAML reference](#yaml-reference) · [Examples](https://github.com/pjasielski/langgraph-declarative/blob/main/examples/README.md) · [Roadmap](https://github.com/pjasielski/langgraph-declarative/blob/main/ROADMAP.md)
 
 </div>
 
@@ -80,7 +80,7 @@ result = graph.invoke({"messages": [{"role": "user", "content": "Hi there"}]})
 That's the whole surface area. `build_graph()` validates the YAML with Pydantic, cross-checks every `function:` and `path:` against the registry, and hands you a compiled LangGraph.
 
 > [!TIP]
-> Every feature below has a commented, runnable example — see **[examples/](examples/README.md)**.
+> Every feature below has a commented, runnable example — see **[examples/](https://github.com/pjasielski/langgraph-declarative/blob/main/examples/README.md)**.
 
 ## How it fits together
 
@@ -98,22 +98,22 @@ Three pieces: a **registry** of Python functions, a **definition** of the topolo
 
 | Feature | YAML | Since | Example |
 |---|---|---|---|
-| Simple & parallel edges | `target: "node"` / `target: [a, b]` | v1 | [quickstart](examples/quickstart/), [fan_out](examples/fan_out/) |
-| Conditional routing | `path:` + `targets:` | v1 | [conditional_routing](examples/conditional_routing/) |
-| Dynamic fan-out (`Send`) | `path:` without `targets` | v1 | [dynamic_routing](examples/dynamic_routing/) |
-| Custom Python state class | `build_graph(..., state_class=...)` | v1 | [custom_state](examples/custom_state/) |
-| State declared in YAML | `state:` with types & reducers | v1.1 | [declared_state](examples/declared_state/) |
-| Match routing (no router fn) | `match:` + `targets:` | v1.1 | [match_routing](examples/match_routing/) |
-| Mermaid diagrams | `draw_mermaid()` | v1.1 | [visualization](examples/visualization/) |
-| IDE autocomplete & validation | [`workflow.schema.json`](schema/workflow.schema.json) | v1.1 | [visualization](examples/visualization/) |
-| Subgraph composition | `subgraph: "child.yaml"` | v2 | [subgraph](examples/subgraph/) |
-| Cross-file node imports | `imports:` | v2 | [cross_file_imports](examples/cross_file_imports/) |
-| LLM config & tool binding | `llm:` + `tools:` | v2 | [llm_and_tools](examples/llm_and_tools/) |
-| Database-stored workflows | `SQLiteLoader`, `build_graph_from_db()` | v2 | [db_workflow](examples/db_workflow/) |
-| LangGraph project template | — | v2 | [template/](template/) |
+| Simple & parallel edges | `target: "node"` / `target: [a, b]` | v1 | [quickstart](https://github.com/pjasielski/langgraph-declarative/tree/main/examples/quickstart/), [fan_out](https://github.com/pjasielski/langgraph-declarative/tree/main/examples/fan_out/) |
+| Conditional routing | `path:` + `targets:` | v1 | [conditional_routing](https://github.com/pjasielski/langgraph-declarative/tree/main/examples/conditional_routing/) |
+| Dynamic fan-out (`Send`) | `path:` without `targets` | v1 | [dynamic_routing](https://github.com/pjasielski/langgraph-declarative/tree/main/examples/dynamic_routing/) |
+| Custom Python state class | `build_graph(..., state_class=...)` | v1 | [custom_state](https://github.com/pjasielski/langgraph-declarative/tree/main/examples/custom_state/) |
+| State declared in YAML | `state:` with types & reducers | v1.1 | [declared_state](https://github.com/pjasielski/langgraph-declarative/tree/main/examples/declared_state/) |
+| Match routing (no router fn) | `match:` + `targets:` | v1.1 | [match_routing](https://github.com/pjasielski/langgraph-declarative/tree/main/examples/match_routing/) |
+| Mermaid diagrams | `draw_mermaid()` | v1.1 | [visualization](https://github.com/pjasielski/langgraph-declarative/tree/main/examples/visualization/) |
+| IDE autocomplete & validation | [`workflow.schema.json`](https://github.com/pjasielski/langgraph-declarative/blob/main/schema/workflow.schema.json) | v1.1 | [visualization](https://github.com/pjasielski/langgraph-declarative/tree/main/examples/visualization/) |
+| Subgraph composition | `subgraph: "child.yaml"` | v2 | [subgraph](https://github.com/pjasielski/langgraph-declarative/tree/main/examples/subgraph/) |
+| Cross-file node imports | `imports:` | v2 | [cross_file_imports](https://github.com/pjasielski/langgraph-declarative/tree/main/examples/cross_file_imports/) |
+| LLM config & tool binding | `llm:` + `tools:` | v2 | [llm_and_tools](https://github.com/pjasielski/langgraph-declarative/tree/main/examples/llm_and_tools/) |
+| Database-stored workflows | `SQLiteLoader`, `build_graph_from_db()` | v2 | [db_workflow](https://github.com/pjasielski/langgraph-declarative/tree/main/examples/db_workflow/) |
+| LangGraph project template | — | v2 | [template/](https://github.com/pjasielski/langgraph-declarative/tree/main/template/) |
 
 > [!NOTE]
-> v1 / v1.1 / v2 are milestone labels, not package versions. All three have shipped — see [CHANGELOG.md](CHANGELOG.md) for releases.
+> v1 / v1.1 / v2 are milestone labels, not package versions. All three have shipped — see [CHANGELOG.md](https://github.com/pjasielski/langgraph-declarative/blob/main/CHANGELOG.md) for releases.
 
 ## YAML reference
 
@@ -170,7 +170,7 @@ edges:
 > ```yaml
 > # yaml-language-server: $schema=path/to/workflow.schema.json
 > ```
-> The schema ships at [`schema/workflow.schema.json`](schema/workflow.schema.json), or regenerate it with `export_json_schema()`.
+> The schema ships at [`schema/workflow.schema.json`](https://github.com/pjasielski/langgraph-declarative/blob/main/schema/workflow.schema.json), or regenerate it with `export_json_schema()`.
 
 ## API
 
@@ -191,13 +191,13 @@ edges:
 
 | Document | Contents |
 |---|---|
-| [examples/](examples/README.md) | 12 runnable examples, one per feature, organized by milestone |
-| [template/](template/) | Starter project for `langgraph dev` using the declarative pattern |
-| [ROADMAP.md](ROADMAP.md) | What shipped per milestone, and unvalidated future ideas |
-| [CHANGELOG.md](CHANGELOG.md) | Release history |
-| [DECISIONS.md](DECISIONS.md) | Why the API and the scope look the way they do |
-| [docs/02-requirements/REQUIREMENTS.md](docs/02-requirements/REQUIREMENTS.md) | Problem, users, success criteria |
-| [docs/03-design/DESIGN.md](docs/03-design/DESIGN.md) | Architecture, module responsibilities, trade-offs |
+| [examples/](https://github.com/pjasielski/langgraph-declarative/blob/main/examples/README.md) | 12 runnable examples, one per feature, organized by milestone |
+| [template/](https://github.com/pjasielski/langgraph-declarative/tree/main/template/) | Starter project for `langgraph dev` using the declarative pattern |
+| [ROADMAP.md](https://github.com/pjasielski/langgraph-declarative/blob/main/ROADMAP.md) | What shipped per milestone, and unvalidated future ideas |
+| [CHANGELOG.md](https://github.com/pjasielski/langgraph-declarative/blob/main/CHANGELOG.md) | Release history |
+| [DECISIONS.md](https://github.com/pjasielski/langgraph-declarative/blob/main/DECISIONS.md) | Why the API and the scope look the way they do |
+| [docs/02-requirements/REQUIREMENTS.md](https://github.com/pjasielski/langgraph-declarative/blob/main/docs/02-requirements/REQUIREMENTS.md) | Problem, users, success criteria |
+| [docs/03-design/DESIGN.md](https://github.com/pjasielski/langgraph-declarative/blob/main/docs/03-design/DESIGN.md) | Architecture, module responsibilities, trade-offs |
 
 <details>
 <summary><b>Project layout</b></summary>
@@ -225,4 +225,4 @@ Issues and pull requests welcome. Run the suite with `uv run pytest` before open
 
 ## License
 
-[MIT](LICENSE). Community project — not affiliated with or endorsed by LangChain. Built on top of [LangGraph](https://github.com/langchain-ai/langgraph).
+[MIT](https://github.com/pjasielski/langgraph-declarative/blob/main/LICENSE). Community project — not affiliated with or endorsed by LangChain. Built on top of [LangGraph](https://github.com/langchain-ai/langgraph).
