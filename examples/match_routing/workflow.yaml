@@ -1,0 +1,43 @@
+# v1.1 feature: match routing — route on a state field's value without
+# writing a Python router function.
+#
+#   match: "category"  reads state["category"] (one level of dot-notation is
+#   supported, e.g. "result.status") and uses it as the routing key.
+#   The reserved key "default" catches any value not listed in targets.
+#
+# Also uses the v1.1 `state:` declaration (see examples/declared_state).
+state:
+  - name: "messages"
+    type: "list"
+    reducer: "add_messages"
+  - name: "category"
+    type: "str"
+
+nodes:
+  - name: "classifier"
+    function: "classify"
+  - name: "billing_agent"
+    function: "handle_billing"
+  - name: "tech_agent"
+    function: "handle_technical"
+  - name: "general_agent"
+    function: "handle_general"
+
+edges:
+  - source: "START"
+    target: "classifier"
+
+  # No `path:` router function — the value of state["category"] picks the target.
+  - source: "classifier"
+    match: "category"
+    targets:
+      billing: "billing_agent"
+      technical: "tech_agent"
+      default: "general_agent"
+
+  - source: "billing_agent"
+    target: "END"
+  - source: "tech_agent"
+    target: "END"
+  - source: "general_agent"
+    target: "END"

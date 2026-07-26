@@ -1,0 +1,55 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "langgraph-declarative"
+version = "0.2.0"
+description = "Declarative YAML workflow definitions for LangGraph — topology as config, logic in Python"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.10"
+authors = [
+    { name = "Piotr Jasielski", email = "piotr.jasielski@gmail.com" },
+]
+keywords = ["langgraph", "langchain", "yaml", "workflow", "declarative", "agents"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries",
+]
+dependencies = [
+    "langgraph>=0.2",
+    "pyyaml>=6.0",
+    "pydantic>=2.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "jsonschema",
+]
+openai = [
+    "langchain-openai",
+]
+anthropic = [
+    "langchain-anthropic",
+]
+
+[project.urls]
+Repository = "https://github.com/pjasielski/langgraph-declarative"
+Homepage = "https://github.com/pjasielski/langgraph-declarative"
+Changelog = "https://github.com/pjasielski/langgraph-declarative/blob/main/CHANGELOG.md"
+Issues = "https://github.com/pjasielski/langgraph-declarative/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/langgraph_declarative"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

@@ -1,0 +1,14 @@
+llm:
+  provider: fake
+  model: fake-default
+
+nodes:
+  - name: "agent"
+    function: "chat_node"
+    tools: ["search_web", "calculator"]
+
+edges:
+  - source: "START"
+    target: "agent"
+  - source: "agent"
+    target: "END"

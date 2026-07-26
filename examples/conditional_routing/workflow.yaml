@@ -1,0 +1,28 @@
+nodes:
+  - name: "classifier"
+    function: "classify"
+  - name: "handle_question"
+    function: "answer_question"
+  - name: "handle_complaint"
+    function: "handle_complaint"
+  - name: "handle_other"
+    function: "handle_other"
+
+edges:
+  - source: "START"
+    target: "classifier"
+
+  # Conditional routing: router returns a key, targets maps keys to nodes
+  - source: "classifier"
+    path: "intent_router"
+    targets:
+      question: "handle_question"
+      complaint: "handle_complaint"
+      other: "handle_other"
+
+  - source: "handle_question"
+    target: "END"
+  - source: "handle_complaint"
+    target: "END"
+  - source: "handle_other"
+    target: "END"

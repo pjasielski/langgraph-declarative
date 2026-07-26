@@ -1,0 +1,26 @@
+nodes:
+  - name: "loader"
+    function: "load_data"
+  - name: "sentiment_analysis"
+    function: "analyze_sentiment"
+  - name: "keyword_extraction"
+    function: "extract_keywords"
+  - name: "summarizer"
+    function: "summarize"
+
+edges:
+  - source: "START"
+    target: "loader"
+
+  # Fan-out: run two analyses in parallel
+  - source: "loader"
+    target: ["sentiment_analysis", "keyword_extraction"]
+
+  # Both branches converge into summarizer
+  - source: "sentiment_analysis"
+    target: "summarizer"
+  - source: "keyword_extraction"
+    target: "summarizer"
+
+  - source: "summarizer"
+    target: "END"

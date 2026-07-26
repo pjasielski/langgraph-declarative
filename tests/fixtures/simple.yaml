@@ -1,0 +1,13 @@
+nodes:
+  - name: "greeter"
+    function: "greet"
+  - name: "responder"
+    function: "respond"
+
+edges:
+  - source: "START"
+    target: "greeter"
+  - source: "greeter"
+    target: "responder"
+  - source: "responder"
+    target: "END"

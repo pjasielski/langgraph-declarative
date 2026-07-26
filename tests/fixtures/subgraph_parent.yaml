@@ -1,0 +1,17 @@
+nodes:
+  - name: "intro"
+    function: "intro_fn"
+  - name: "child"
+    subgraph: "subgraph_child.yaml"
+  - name: "outro"
+    function: "outro_fn"
+
+edges:
+  - source: "START"
+    target: "intro"
+  - source: "intro"
+    target: "child"
+  - source: "child"
+    target: "outro"
+  - source: "outro"
+    target: "END"

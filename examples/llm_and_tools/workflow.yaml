@@ -1,0 +1,30 @@
+# v2 features: LLM configuration and tool binding in YAML.
+#
+# Graph-level `llm:` is the default for every node that opts in (a node
+# function opts in by accepting an `llm` keyword parameter). A node-level
+# `llm:` merges over the graph default — here `summarizer` keeps the
+# provider but swaps to a smaller model.
+#
+# `tools:` lists tools to bind to the node's LLM. Names resolve from the
+# registry (@registry.tool) or from an import path ("my_module:my_tool").
+llm:
+  provider: "anthropic"
+  model: "claude-opus-4-8"
+
+nodes:
+  - name: "agent"
+    function: "weather_agent"
+    tools: ["get_weather"]
+  - name: "summarizer"
+    function: "summarize_chat"
+    llm:
+      model: "claude-haiku-4-5"   # override: cheaper model for the simple step
+      max_tokens: 200
+
+edges:
+  - source: "START"
+    target: "agent"
+  - source: "agent"
+    target: "summarizer"
+  - source: "summarizer"
+    target: "END"

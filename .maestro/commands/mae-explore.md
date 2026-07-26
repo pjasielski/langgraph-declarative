@@ -20,14 +20,15 @@ $ARGUMENTS — optional: topic, file path, "ask", or "doc"
 ### First Explore (nothing exists)
 
 1. **Scan for existing project resources:**
+
    - Always read: `README.md`, `maestro.toml`, `HANDOFF.md`
    - Scan `docs/` — list file names and sizes (do NOT read contents yet)
    - Scan `data/` — list file names only (flag if folder is large)
    - Scan source code — directory tree structure only (no file contents)
    - Report findings: "I see these existing resources: [list]. Which should I include in my analysis?"
    - Wait for user direction before reading large files or datasets
-
 2. **Produce initial scope artifact** containing:
+
    - Business + technical overview (from whatever is available)
    - Identified gaps and potential problems (`GAP:` / `UNCLEAR:` tags)
    - **Questions section** — questions the agent needs answered to proceed (see Questions Format below)
@@ -36,21 +37,23 @@ $ARGUMENTS — optional: topic, file path, "ask", or "doc"
 
 Detect what exists and assess readiness:
 
-| Readiness signal | What it checks |
-|------------------|----------------|
-| **Scope defined** | Is there a business + technical overview? |
+| Readiness signal                 | What it checks                                                              |
+| -------------------------------- | --------------------------------------------------------------------------- |
+| **Scope defined**          | Is there a business + technical overview?                                   |
 | **Key questions resolved** | Ratio of resolved vs. open questions in `_summary.md` and prior artifacts |
-| **Coverage breadth** | Do artifacts cover business, technical, AND stakeholder angles? |
-| **Blocking gaps** | Any `GAP:` or `UNCLEAR:` flags still unresolved? |
-| **User intent** | Has the user indicated readiness to move on? |
+| **Coverage breadth**       | Do artifacts cover business, technical, AND stakeholder angles?             |
+| **Blocking gaps**          | Any `GAP:` or `UNCLEAR:` flags still unresolved?                        |
+| **User intent**            | Has the user indicated readiness to move on?                                |
 
 Based on readiness, produce the most useful next artifact:
+
 - **Gap analysis** — what's missing based on existing artifacts
 - **Deeper analysis** — drill into an area that needs more understanding
 - **Risk identification** — flags and concerns from available material
 - **Question list** — questions for specific audiences
 
 When coverage is strong and gaps are few, suggest:
+
 > "Coverage looks solid — [list what's covered]. Remaining gaps: [list]. Consider `/mae-explore doc` when ready, or continue exploring [specific areas]."
 
 ### Readiness Indicator
@@ -70,19 +73,24 @@ After each explore artifact, append a readiness assessment to `_summary.md`:
 ## Targeted Analysis (topic or file)
 
 ### Topic
+
 ```
 /mae-explore "auth system"
 /mae-explore "competitor landscape"
 /mae-explore "data pipeline"
 ```
+
 Produces a focused deep-dive analysis on the specified area. Reads existing explore artifacts for context to avoid redundancy.
 
 ### File / Transcript
+
 ```
 /mae-explore /path/to/transcript.md
 /mae-explore /path/to/meeting-notes.txt
 ```
+
 Reads the file and produces a structured summary:
+
 - Key points and takeaways
 - Decisions mentioned
 - Questions raised
@@ -139,47 +147,48 @@ The user or client fills in responses directly in the file. On next explore, the
 ```
 
 1. Read ALL explore working artifacts from the current and previous sessions
-2. Read any existing material in `delivery/01-explore/`
-3. Produce structured report using `templates/explore.md`
+2. Read any existing material in `docs/01-explore/`
+3. Produce structured report using `.maestro/templates/explore.md`
 4. Save to session folder
-5. Ask: "Ready to promote to delivery/01-explore/?"
+5. Ask: "Ready to promote to docs/01-explore/?"
 
 The explore report is a **living document** — running `explore doc` again replaces the previous version (session keeps the history via numbered files).
 
 ## Behavior
 
 1. **Read context:**
-   - `delivery/01-explore/` (confirmed artifacts)
+
+   - `docs/01-explore/` (confirmed artifacts)
    - Current session files (working artifacts)
    - `DECISIONS.md`, `OPEN_QUESTIONS.md`
    - `maestro.toml` (project context, user profile if configured)
    - `README.md` (if exists)
    - On first explore (no prior artifacts): scan `docs/`, `data/`, `src/` — report what's available, ask before reading
-   - For `doc` mode: `templates/explore.md` (report structure)
-
+   - For `doc` mode: `.maestro/templates/explore.md` (report structure)
 2. **Generate artifact** — type depends on mode (see above)
-
 3. **Every artifact MUST include a questions section** — questions the agent needs answered to deepen understanding. This is not optional. The goal is to build mutual understanding through iterative Q&A.
-
 4. **Save to session folder** (numbered file, e.g., `03_scope-analysis.md`)
-
 5. **Update readiness indicator** in `_summary.md`
-
-6. **For `doc` mode only:** offer promotion to `delivery/01-explore/`
+6. **For `doc` mode only:** offer promotion to `docs/01-explore/`
 
 ## Output Behaviors
 
 - **Always ask questions** — every explore artifact ends with questions for the user or relevant audience
 - Surface unknowns and flag gaps (`GAP:`, `UNCLEAR:`)
-- Compare options when multiple approaches exist
+- Compare options when multiple approaches exist. Recommend one you consider best.
 - Rank questions by importance (blocking → important → clarifying)
 - When uncertain about what to read or analyze, ask the user rather than guessing
 
+## Skip When
+- Requirements are already well-defined (e.g., detailed brief from client) — skip to `/mae-req`
+- Building a trivial script with obvious scope — skip to `/mae-do`
+- Returning to a well-explored project — check if coverage is already sufficient before exploring again
+
 ## Artifact Flow
 
-All explore artifacts → sessions/ (working material)
-Final report (`doc`) → sessions/ → user promotes to delivery/01-explore/
-When ready → user runs `/mae-prd` to formalize requirements
+All explore artifacts → .sessions/ (working material)
+Final report (`doc`) → .sessions/ → user promotes to docs/01-explore/
+When ready → user runs `/mae-req` to formalize requirements
 
 ## Rules
 

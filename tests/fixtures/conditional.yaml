@@ -1,0 +1,20 @@
+nodes:
+  - name: "classifier"
+    function: "classify"
+  - name: "handle_positive"
+    function: "positive"
+  - name: "handle_negative"
+    function: "negative"
+
+edges:
+  - source: "START"
+    target: "classifier"
+  - source: "classifier"
+    path: "sentiment_router"
+    targets:
+      positive: "handle_positive"
+      negative: "handle_negative"
+  - source: "handle_positive"
+    target: "END"
+  - source: "handle_negative"
+    target: "END"

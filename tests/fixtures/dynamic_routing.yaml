@@ -1,0 +1,13 @@
+nodes:
+  - name: "dispatcher"
+    function: "dispatch"
+  - name: "worker"
+    function: "work"
+
+edges:
+  - source: "START"
+    target: "dispatcher"
+  - source: "dispatcher"
+    path: "dynamic_router"
+  - source: "worker"
+    target: "END"

@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3 -m pytest tests/ -v)",
+      "Bash(source $HOME/.local/bin/env)",
+      "Bash(uv run:*)",
+      "Bash(python3 /Users/piotr/Projects/langgraph-declarative/examples/dynamic_routing/main.py)",
+      "Bash(python3 /Users/piotr/Projects/langgraph-declarative/examples/custom_state/main.py)",
+      "Bash(find /Users/piotr/.claude/projects/ -type d -name \"memory\" 2>/dev/null)",
+      "Read(//Users/piotr/.claude/projects/**)",
+      "Skill(mae-do)",
+      "Bash(uv sync:*)",
+      "Bash(for ex in quickstart conditional_routing custom_state dynamic_routing fan_out)",
+      "Bash(do echo \"=== $ex ===\")",
+      "Bash(done)",
+      "Bash(gh repo *)",
+      "Bash(sed -i '' 's#| Sessions   | Committed to git | Gitignored                  |#| Sessions   | Gitignored \\(`.sessions/`, local-only\\) | Gitignored \\(`.sessions/`\\) |#' MAESTRO.md)",
+      "Bash(sed -i '' 's#| `.gitignore` | .sessions/ and notes/ NOT gitignored | .sessions/ and notes/ ARE gitignored |#| `.gitignore` | .sessions/ gitignored, notes/ NOT gitignored | .sessions/ and notes/ ARE gitignored |#' .maestro/commands/mae-init.md)"
+    ]
+  }
+}

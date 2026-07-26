@@ -38,19 +38,19 @@ Apply per-command: `/mae-explore -v` produces a verbose report. `/mae-explore -c
 - No hedging ("You might want to consider" → "Recommendation:")
 - Fragments OK in lists and bullets
 - Technical terms stay exact
-- Every substantive response saved as a numbered file in the session folder
-- Chat output = brief summary only, not a duplicate of the file
+- Command artifacts saved as numbered session files; conversational answers stay in chat (see Artifact Capture)
+- When a file is produced, chat output = brief summary only, not a duplicate of the file
 
 ### Output Behaviors by Command Type
 
-| Command | Auto-include                                                                          |
-| ------- | ------------------------------------------------------------------------------------- |
-| explore | Surface questions. Flag unknowns. Compare options when multiple approaches exist.     |
-| prd     | Flag ambiguities. Note assumptions. Identify missing requirements.                    |
-| design  | List trade-offs as tables. State recommendation with rationale. Compare alternatives. |
-| plan    | Flag dependencies and blockers. Estimate effort. Sequence tasks logically.            |
-| do      | Report what was done. Flag issues found. Show verification results.                   |
-| review  | List findings by severity. Suggest concrete fixes. Cross-reference with SDD/PRD.      |
+| Command | Auto-include                                                                                   |
+| ------- | ---------------------------------------------------------------------------------------------- |
+| explore | Surface questions. Flag unknowns. Compare options when multiple approaches exist.              |
+| req     | Flag ambiguities. Note assumptions. Identify missing requirements.                             |
+| design  | List trade-offs as tables. State recommendation with rationale. Compare alternatives.          |
+| plan    | Flag dependencies and blockers. Estimate effort. Sequence tasks logically.                     |
+| do      | Report what was done. Flag issues found. Show verification results.                            |
+| review  | List findings by severity. Suggest concrete fixes. Cross-reference with DESIGN/REQUIREMENTS.   |
 
 ---
 
@@ -59,11 +59,11 @@ Apply per-command: `/mae-explore -v` produces a verbose report. `/mae-explore -c
 ### New Chat Protocol
 
 1. Read `HANDOFF.md`
-2. Check `sessions/` for the highest-numbered session folder
+2. Check `.sessions/` for the highest-numbered session folder
 3. Greet: "I've read the handoff. Last session was **{NNN}-{name}**. Current phase: **{phase}**. What would you like to work on?"
 4. Wait for the user to provide a session title (e.g., `"003-api-design"`)
-5. Create folder: `sessions/{NNN}-{title}/`
-6. Create file: `sessions/{NNN}-{title}/_summary.md` using `templates/summary.md`
+5. Create folder: `.sessions/{NNN}-{title}/`
+6. Create file: `.sessions/{NNN}-{title}/_summary.md` using `templates/summary.md`
 7. Begin work
 
 If the user doesn't provide a title and jumps into work, ask: "Should I open a session for this? What should I call it?"
@@ -78,14 +78,14 @@ If the user doesn't provide a title and jumps into work, ask: "Should I open a s
 
 | Task                         | Load                                                                        | Skip                          |
 | ---------------------------- | --------------------------------------------------------------------------- | ----------------------------- |
-| **Exploration**        | HANDOFF.md, delivery/01-explore/                                            | Code, SDD, plan               |
-| **PRD writing**        | HANDOFF.md, delivery/01-explore/, DECISIONS.md                              | Code, SDD                     |
-| **Design**             | HANDOFF.md, PRD.md, delivery/01-explore/ (technical sections), maestro.toml | Code, test files              |
-| **Planning**           | HANDOFF.md, SDD.md, existing tasks                                          | Full code, exploration        |
-| **Implementation**     | HANDOFF.md, task file, SDD.md (relevant section), source files              | Other tasks, exploration, PRD |
-| **Code review**        | HANDOFF.md, SDD.md, files being reviewed                                    | Exploration, planning         |
-| **Testing**            | HANDOFF.md, task file, source code, SDD (expected behaviour)                | Exploration, planning         |
-| **Debugging**          | HANDOFF.md, error context, source files, SDD                                | Everything unrelated          |
+| **Exploration**        | HANDOFF.md, docs/01-explore/                                                        | Code, design, plan                 |
+| **Requirements**       | HANDOFF.md, docs/01-explore/, DECISIONS.md                                          | Code, design                       |
+| **Design**             | HANDOFF.md, REQUIREMENTS.md, docs/01-explore/ (technical sections), maestro.toml    | Code, test files                   |
+| **Planning**           | HANDOFF.md, DESIGN.md, ROADMAP.md, existing tasks                                       | Full code, exploration             |
+| **Implementation**     | HANDOFF.md, task file, DESIGN.md (relevant section), source files                       | Other tasks, exploration, req      |
+| **Code review**        | HANDOFF.md, DESIGN.md, files being reviewed                                              | Exploration, planning              |
+| **Testing**            | HANDOFF.md, task file, source code, DESIGN.md (expected behaviour)                      | Exploration, planning              |
+| **Debugging**          | HANDOFF.md, error context, source files, DESIGN.md                                       | Everything unrelated               |
 | **Session management** | HANDOFF.md, DECISIONS.md, OPEN_QUESTIONS.md                                 | Code, delivery docs           |
 
 ### Context Budget
@@ -105,18 +105,18 @@ Open questions              → OPEN_QUESTIONS.md
 Activity log                → WORKLOG.md
 Project config              → maestro.toml
 
-Exploration artifacts       → delivery/01-explore/
-Requirements (PRD)          → delivery/02-prd/
-Architecture (SDD)          → delivery/03-design/
-Implementation plan & tasks → delivery/04-plan/ and delivery/04-plan/tasks/
-Review artifacts            → delivery/05-review/  (created on demand)
-Test artifacts              → delivery/06-test/    (created on demand)
-Deployment config           → delivery/07-deploy/  (created on demand)
-Maintenance & bugs          → delivery/08-maintenance/  (created on demand)
+Exploration artifacts       → docs/01-explore/
+Requirements               → docs/02-requirements/REQUIREMENTS.md
+Design (architecture)      → docs/03-design/DESIGN.md
+Roadmap & tasks            → docs/04-plan/ROADMAP.md and docs/04-plan/tasks/
+Implementation reports     → docs/05-implementation/  (created on demand)
+Review artifacts            → docs/06-review/  (created on demand)
+Test artifacts              → docs/07-test/    (created on demand)
+Deployment config           → docs/08-deploy/  (created on demand)
+Maintenance & bugs          → docs/09-maintenance/  (created on demand)
 
-Templates                   → templates/
-Raw ideas                   → notes/ideas.md
-Session history             → sessions/{NNN}-{name}/_summary.md
+Templates                   → .maestro/templates/
+Session history             → .sessions/{NNN}-{name}/_summary.md
 Source code                 → src/ (or project-specific path)
 Framework commands          → .maestro/commands/mae-*.md
 Claude Code adapters        → .claude/commands/mae-*.md  (thin wrappers → .maestro/commands/)
@@ -127,10 +127,11 @@ Cursor adapters             → .cursor/rules/  (maestro-core.mdc + maestro-disp
 
 | Folder                       | Contains                                                       | Create when                                    |
 | ---------------------------- | -------------------------------------------------------------- | ---------------------------------------------- |
-| `delivery/05-review/`      | Review reports (code, docs, architecture), audit findings      | First formal review cycle                      |
-| `delivery/06-test/`        | Test plans, test reports, coverage summaries, QA checklists    | Test planning needed beyond inline tests       |
-| `delivery/07-deploy/`      | Deployment runbooks, environment configs, release checklists   | Deployment is non-trivial or multi-environment |
-| `delivery/08-maintenance/` | Bug reports (`issues/`), tech debt log, maintenance runbooks | First bug filed or maintenance task identified |
+| `docs/05-implementation/` | Implementation reports from `/mae-do` execution              | First substantial implementation task          |
+| `docs/06-review/`      | Review reports (code, docs, architecture), audit findings      | First formal review cycle                      |
+| `docs/07-test/`        | Test plans, test reports, coverage summaries, QA checklists    | Test planning needed beyond inline tests       |
+| `docs/08-deploy/`      | Deployment runbooks, environment configs, release checklists   | Deployment is non-trivial or multi-environment |
+| `docs/09-maintenance/` | Bug reports (`issues/`), tech debt log, maintenance runbooks | First bug filed or maintenance task identified |
 
 ---
 
@@ -139,9 +140,9 @@ Cursor adapters             → .cursor/rules/  (maestro-core.mdc + maestro-disp
 ### Decision Protection
 
 - NEVER change established architecture decisions without user approval
-- When you spot an inconsistency between code and SDD, flag it: `CONSISTENCY: [details]`
-- Treat `delivery/` artifacts as canonical truth for requirements and design
-- `sessions/` and `notes/` are working material, NOT canonical
+- When you spot an inconsistency between code and DESIGN.md, flag it: `CONSISTENCY: [details]`
+- Treat `docs/` artifacts as canonical truth for requirements and design
+- `.sessions/` are working material, NOT canonical
 
 ### Code Standards
 
@@ -169,15 +170,14 @@ Cursor adapters             → .cursor/rules/  (maestro-core.mdc + maestro-disp
 **Free zone (no permission needed):**
 
 - Creating new files anywhere
-- Editing anything inside `sessions/`
-- Editing anything inside `notes/`
+- Editing anything inside `.sessions/`
 - Appending to WORKLOG.md
 - Appending to DECISIONS.md
 
 **Review required (show changes, wait for approval):**
 
 - Editing HANDOFF.md
-- Editing any file in `delivery/` (canonical artifacts)
+- Editing any file in `docs/` (canonical artifacts)
 - Editing source code
 - Editing maestro.toml
 - Editing OPEN_QUESTIONS.md (when resolving questions)
@@ -196,7 +196,7 @@ Cursor adapters             → .cursor/rules/  (maestro-core.mdc + maestro-disp
 | `GAP:`         | Missing information relevant to current work    |
 | `UNCLEAR:`     | Ambiguous requirement                           |
 | `STALE:`       | Delivery artifact references outdated decisions |
-| `DRIFT:`       | Code diverges from SDD                          |
+| `DRIFT:`       | Code diverges from DESIGN.md                    |
 
 ### Auto-Update Triggers for _summary.md
 
@@ -209,9 +209,30 @@ Update the session's `_summary.md` when:
 
 Do NOT update for quick Q&A or minor exchanges.
 
-### Always Save to File
+### Artifact Capture
 
-Every substantive response (proposal, analysis, draft, comparison) MUST be saved as a numbered file in the session folder. Chat = brief summary. File = full content. Sequential numbering: `NN_kebab-case-description.md`.
+**Commands generate files; conversation does not.**
+
+- Every delivery/utility command saves its artifacts as numbered session files (explore report + question files, requirements draft + report, design draft + report, plan report, review findings, implementation report) — per the command's definition.
+- Direct user queries (questions, discussion, analysis asked in chat) are answered in chat only.
+- Exception: if a chat answer is extensive (~300+ words), ask whether to save it to a session file.
+- `/md` saves the previous response on demand — verbatim, never summarized.
+- `response_capture = "all"` in `maestro.toml` restores save-everything behavior.
+
+Sequential numbering: `NN_kebab-case-description.md`.
+
+### Question Style
+
+Controlled by `question_style` in `maestro.toml`. Determines how the agent asks questions.
+
+| Style | Behavior |
+|-------|----------|
+| `"async"` | Write questions to a numbered file in the session folder (e.g., `03_questions.md`). In chat, say: "I have **N questions** — see `{session}/NN_questions.md`. Answer inline and let me know when ready." |
+| `"sync"` | Ask questions directly in the conversation. |
+
+**Default:** `async` — the user reviews and answers questions in their own time.
+
+The user can override per-message (e.g., "ask me directly" or "put questions in a file") regardless of the configured style.
 
 ### Proactive Questions
 
@@ -221,7 +242,7 @@ Every substantive response (proposal, analysis, draft, comparison) MUST be saved
 
 1. Ambiguity blocks the current task
 2. A contradiction between artifacts is detected
-3. An implementation task references a component not in the SDD
+3. An implementation task references a component not in DESIGN.md
 4. A security or data concern is spotted
 
 NEVER proactively ask about future phases, technology preferences when the stack is decided, or topics unrelated to the current task.
@@ -253,29 +274,28 @@ Use in `_summary.md` to track decision lifecycle:
 
 ## Delivery Phases
 
-8 commands. Not all projects need all phases — the user decides which to use and in what order.
+7 delivery commands + 4 utility commands. Not all projects need all phases — the user decides which to use and in what order.
 
-**Maestro does not enforce a rigid sequence.** Phases are tools, not gates. The user can revisit any phase, skip phases, or run them in any order that fits the project. Common patterns:
+**Maestro does not enforce a rigid sequence.** Phases are tools, not gates. The user can revisit any phase, skip phases, or run them in any order that fits the project. Each command has a `## Skip When` section describing when to skip it. Common patterns:
 
 ```
-Standard:   explore → prd → design → plan → do → review
-PoC-first:  explore (light) → do (PoC) → [feedback] → explore (refined) → prd → design → do
+Standard:   explore → req → design → plan → do → review
+PoC-first:  explore (light) → do (PoC) → [feedback] → explore (refined) → req → design → do
 Fast-track: explore → design → do → review
-Iterative:  explore → prd → do (MVP) → [feedback] → explore → prd (revised) → do
+Iterative:  explore → req → do (MVP) → [feedback] → explore → req (revised) → do
 ```
 
 The agent should suggest next steps based on what exists, but never block the user from choosing a different path.
 
-| #  | Phase      | Command             | Output                                                    |
-| -- | ---------- | ------------------- | --------------------------------------------------------- |
-| 01 | Explore    | `/mae-explore`    | Understanding docs, questions, gaps, readiness assessment |
-| 02 | PRD        | `/mae-prd`        | PRD.md — formalized requirements                         |
-| 03 | Design     | `/mae-design`     | SDD.md — technical architecture                          |
-| 04 | Plan       | `/mae-plan`       | PLAN.md, tasks/ — implementation roadmap                 |
-| — | Do         | `/mae-do`         | Executed work (code, docs, config, PoCs)                  |
-| — | Review     | `/mae-review`     | Review findings, suggestions                              |
-| — | Init       | `/mae-init`       | Project scaffold (run once at start)                      |
-| — | Checkpoint | `/mae-checkpoint` | Named snapshot of project state                           |
+| #  | Phase        | Command           | Alias  | Output                                                    |
+| -- | ------------ | ----------------- | ------ | --------------------------------------------------------- |
+| 01 | Explore      | `/mae-explore`  | `mex` | Understanding docs, questions, gaps, readiness assessment |
+| 02 | Requirements | `/mae-req`      | `mrq` | REQUIREMENTS.md — formalized requirements                |
+| 03 | Design       | `/mae-design`   | `mds` | DESIGN.md — technical architecture                       |
+| 04 | Plan         | `/mae-plan`     | `mpl` | ROADMAP.md + tasks/ — milestones and task files          |
+| 05 | Do           | `/mae-do`       | `mdo` | Executed work (code, docs, config, PoCs)                  |
+| 06 | Review       | `/mae-review`   | `mrv` | Review findings, suggestions                              |
+| —  | Init         | `/mae-init`     | —      | Profile setup (run once at start)                         |
 
 ### On-Demand Phases
 
@@ -283,10 +303,11 @@ These folders are created when first needed, not by `init`:
 
 | Phase       | Folder                              | Created when                       |
 | ----------- | ----------------------------------- | ---------------------------------- |
-| Review      | `delivery/05-review/`             | Formal review cycles or audits     |
-| Test        | `delivery/06-test/`               | Test plans need dedicated storage  |
-| Deploy      | `delivery/07-deploy/`             | Deployment is non-trivial          |
-| Maintenance | `delivery/08-maintenance/issues/` | Bugs, tech debt, maintenance tasks |
+| Implementation | `docs/05-implementation/`  | First substantial `/mae-do` execution |
+| Review      | `docs/06-review/`             | Formal review cycles or audits     |
+| Test        | `docs/07-test/`               | Test plans need dedicated storage  |
+| Deploy      | `docs/08-deploy/`             | Deployment is non-trivial          |
+| Maintenance | `docs/09-maintenance/issues/` | Bugs, tech debt, maintenance tasks |
 
 ---
 
@@ -296,24 +317,54 @@ These folders are created when first needed, not by `init`:
 Session (workbench)                     Delivery (confirmed)
 ────────────────                        ────────────────────
 /mae-explore
-  → working artifacts (session)  ──promote──→  delivery/01-explore/
-  → /mae-explore doc (session)   ──promote──→  delivery/01-explore/
+  → working artifacts (session)  ──promote──→  docs/01-explore/
+  → /mae-explore doc (session)   ──promote──→  docs/01-explore/
 
-/mae-prd
-  ← reads delivery/01-explore/*
-  → PRD draft (session)          ──promote──→  delivery/02-prd/PRD.md
+/mae-req
+  ← reads docs/01-explore/*
+  → requirements draft (session)  ──promote──→  docs/02-requirements/REQUIREMENTS.md
 
 /mae-design
-  ← reads delivery/02-prd/PRD.md
-  → SDD draft (session)          ──promote──→  delivery/03-design/SDD.md
+  ← reads docs/02-requirements/REQUIREMENTS.md
+  → design draft (session)        ──promote──→  docs/03-design/DESIGN.md
 
 /mae-plan
-  ← reads delivery/03-design/SDD.md
-  → task files                    ──────────→  delivery/04-plan/tasks/
+  ← reads docs/03-design/DESIGN.md
+  → ROADMAP.md                    ──────────→  docs/04-plan/ROADMAP.md
+  → task files                    ──────────→  docs/04-plan/tasks/
+
+/mae-do
+  ← reads task file + DESIGN.md (relevant section) + source files
+  → code, docs, config           ──────────→  in-place
+  → implementation report         ──promote──→  docs/05-implementation/
 ```
 
-All commands save to `sessions/` first. User reviews, then promotes to `delivery/` when ready.
-Exception: `/mae-plan` saves tasks directly to delivery/ (they're immediately actionable).
+All commands save to `.sessions/` first. User reviews, then promotes to `docs/` when ready.
+Exceptions: `/mae-plan` saves ROADMAP and tasks directly to docs/ (immediately actionable).
+`/mae-do` saves reports to session; substantial reports can be promoted to `docs/05-implementation/`.
+
+### Adaptive Workflow Guidance
+
+After each command, ask yourself whether to proceed or skip:
+
+```
+After /mae-explore:
+  "Can I describe what to build in 2 sentences?"
+    Yes → skip req, go to /mae-design or /mae-do
+    No  → run /mae-req to formalize requirements
+
+After /mae-req or /mae-design:
+  "Is there more than one milestone of work?"
+    Yes → run /mae-plan to sequence it
+    No  → go straight to /mae-do
+
+After /mae-do:
+  "Did I complete a planned task?"
+    Yes → ROADMAP status updated; suggest /sync at end of session
+    No  → continue or suggest next task
+```
+
+This is soft guidance — the agent suggests, the user decides.
 
 ---
 
@@ -323,15 +374,28 @@ Exception: `/mae-plan` saves tasks directly to delivery/ (they're immediately ac
 
 | File                  | Purpose                                                   | Updated By                         |
 | --------------------- | --------------------------------------------------------- | ---------------------------------- |
-| `HANDOFF.md`        | Single source of truth — status, decisions, architecture | `/sync` (with review)            |
-| `DECISIONS.md`      | Decision audit trail — date, session, decision, status   | `/decide` (free zone)            |
-| `OPEN_QUESTIONS.md` | Questions needing answers — prioritized                  | `/decide` resolves               |
+| `HANDOFF.md`        | Single source of truth — status, decisions, architecture | `/sync` (with review)             |
+| `DECISIONS.md`      | Decision audit trail — date, session, decision, status   | `/decide` (free zone)             |
+| `OPEN_QUESTIONS.md` | Questions needing answers — prioritized                  | `/decide` resolves                |
 | `WORKLOG.md`        | Activity log — date, session, summary                    | Auto-updated at session boundaries |
+| `ROADMAP.md`        | Milestone tracker with status column                     | `/mae-plan`, `/mae-do`, `/sync`  |
+
+### ROADMAP Status Values
+
+When updating the Status column in `ROADMAP.md`, use these exact values:
+
+| Status | Meaning |
+|--------|---------|
+| ☐ todo | Not started |
+| 🔄 in progress | Work underway |
+| ⏳ blocked | Waiting on dependency |
+| ✅ done | Completed |
+| ⊘ dropped | Removed from scope |
 
 ### Session Structure
 
 ```
-sessions/
+.sessions/
 ├── 000-handoff/              ← migrated from prior tools
 ├── 001-framework-bootstrap/
 │   ├── _summary.md
@@ -345,8 +409,8 @@ sessions/
 ### The Pipeline
 
 ```
-notes/ideas.md        →  OPEN_QUESTIONS.md  →  DECISIONS.md  →  Canonical files
-"what if?"               "should we?"           "we decided"     (via /sync)
+OPEN_QUESTIONS.md  →  DECISIONS.md  →  Canonical files
+"should we?"          "we decided"     (via /sync)
 ```
 
 ---
@@ -383,30 +447,37 @@ Every command saves a report to the session folder:
 
 ## Task Management
 
-Tasks are markdown files in `delivery/04-plan/tasks/`. Each file IS the ticket.
+Tasks are markdown files in `docs/04-plan/tasks/`. Each file IS the ticket.
 
-**Template:** `templates/task.md`
+**Naming & IDs — one ID everywhere.** Task ID = `M{MM}.{NN}` (zero-padded, e.g., `M03.01`). The identical string appears in the ROADMAP `#` column, the task filename `M{MM}.{NN}-{slug}.md` (e.g., `M03.01-skill-spike.md`), and the task title (`# Task M03.01: …`) — searching one ID finds all three. Sub-tasks append a letter: `M03.01a`. Milestone headers use `M{MM}`.
 
-**Statuses:** todo → in-progress → done (or blocked)
+**Template:** `.maestro/templates/task.md`
+
+**Statuses:** ☐ todo → 🔄 in-progress → ✅ done (or ⏳ blocked)
 
 **Board view:** Use `/status` to see task summary, or read task files directly.
 
 ---
 
-## Solo vs Team Mode
+## Session Visibility
 
-| Aspect     | Solo             | Team                        |
+Controls whether `.sessions/` is committed to git or gitignored.
+
+| Setting | `.sessions/` | When to use |
 | ---------- | ---------------- | --------------------------- |
-| Sessions   | Committed to git | Gitignored                  |
-| WORKLOG.md | No "Who" column  | "Who" column added          |
-| `/sync`  | Optional         | Required to share decisions |
+| `"committed"` | In git | Solo projects, or teams that want session history in the repo |
+| `"gitignored"` | Gitignored | Teams where sessions are personal working material |
 
-Toggle via `maestro.toml`:
+Set in `maestro.toml`:
 
 ```toml
 [project]
-mode = "solo"  # or "team"
+session_visibility = "committed"  # or "gitignored"
+question_style = "async"          # or "sync"
+ai_tools = ["claude", "cursor"]   # installed adapters
 ```
+
+**Team features** are inferred from the presence of `[[team.members]]` in `maestro.toml`. No separate mode toggle needed — if team members are defined, team behaviors activate (e.g., "Who" column in WORKLOG.md, `/sync` required to share decisions).
 
 ---
 
@@ -414,7 +485,7 @@ mode = "solo"  # or "team"
 
 Optional. Configured in `maestro.toml`. Helps the agent adapt its assistance to the practitioner's expertise.
 
-**Solo mode:**
+**Individual profile:**
 
 ```toml
 [user]
@@ -423,7 +494,7 @@ strengths = ["backend", "python", "system-design"]
 needs_help = ["frontend", "ux"]
 ```
 
-**Team mode:**
+**Team profiles** (presence of `[[team.members]]` activates team behaviors):
 
 ```toml
 [[team.members]]
@@ -448,7 +519,7 @@ When a profile exists, the agent adjusts:
 - **Question targeting:** Fewer questions in strength areas, more in weakness areas
 - **Artifact detail:** More scaffolding in sections the user will rely on
 
-In team mode, the agent asks "Who am I working with?" at session start and adapts to that member.
+When `[[team.members]]` is defined, the agent asks "Who am I working with?" at session start and adapts to that member.
 
 If no profile is configured, the agent behaves generically (no adaptation). This is fully optional.
 
@@ -458,9 +529,9 @@ If no profile is configured, the agent behaves generically (no adaptation). This
 
 | File        | Target             | Hard Max    |
 | ----------- | ------------------ | ----------- |
-| HANDOFF.md  | 200–300 lines     | 400 lines   |
-| PRD.md      | 1,500–3,000 words | 5,000 words |
-| SDD.md      | 2,000–4,000 words | 6,000 words |
+| HANDOFF.md       | 200–300 lines     | 400 lines   |
+| REQUIREMENTS.md  | 1,500–3,000 words | 5,000 words |
+| DESIGN.md        | 2,000–4,000 words | 6,000 words |
 | Task file   | 200–500 words     | 800 words   |
 | _summary.md | 200–400 words     | 600 words   |
 

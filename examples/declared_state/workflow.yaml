@@ -1,0 +1,42 @@
+# v1.1 feature: declare the state schema in YAML — no Python state class needed.
+#
+# Each field has a name, a type, and an optional reducer:
+#   - reducer: append       → list updates are concatenated (operator.add),
+#                              required when parallel branches write the same field
+#   - reducer: add_messages → LangGraph's message merger (for chat states)
+#   - no reducer ("replace") → last write wins (LangGraph default)
+state:
+  - name: "document"
+    type: "str"
+  - name: "notes"
+    type: "list[str]"
+    reducer: "append"
+  - name: "summary"
+    type: "str"
+
+nodes:
+  - name: "loader"
+    function: "load_document"
+  - name: "stats"
+    function: "compute_stats"
+  - name: "tags"
+    function: "extract_tags"
+  - name: "summarizer"
+    function: "summarize"
+
+edges:
+  - source: "START"
+    target: "loader"
+
+  # Both branches run in parallel and append to 'notes' — without the
+  # 'append' reducer, one branch would overwrite the other's update.
+  - source: "loader"
+    target: ["stats", "tags"]
+
+  - source: "stats"
+    target: "summarizer"
+  - source: "tags"
+    target: "summarizer"
+
+  - source: "summarizer"
+    target: "END"

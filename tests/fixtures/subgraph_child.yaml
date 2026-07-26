@@ -1,0 +1,14 @@
+state:
+  - name: messages
+    type: list
+    reducer: add_messages
+
+nodes:
+  - name: "child_step"
+    function: "child_step_fn"
+
+edges:
+  - source: "START"
+    target: "child_step"
+  - source: "child_step"
+    target: "END"

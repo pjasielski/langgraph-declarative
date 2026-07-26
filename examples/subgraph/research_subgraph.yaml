@@ -1,0 +1,21 @@
+# The child workflow embedded by workflow.yaml. It declares its own state
+# (v1.1 feature) sharing the "messages" key with the parent, so data flows
+# across the parent/child boundary automatically.
+state:
+  - name: "messages"
+    type: "list"
+    reducer: "add_messages"
+
+nodes:
+  - name: "gather"
+    function: "gather_sources"
+  - name: "condense"
+    function: "condense_findings"
+
+edges:
+  - source: "START"
+    target: "gather"
+  - source: "gather"
+    target: "condense"
+  - source: "condense"
+    target: "END"
