@@ -43,6 +43,7 @@ Save the current response (or a specified topic) to a Markdown file in the activ
 
 ## Rules
 
+- Save the response verbatim and complete — never summarize, truncate, or rewrite the content being saved
 - Content should be well-structured markdown — use headers, tables, and lists for clarity
 - If the response naturally splits into multiple topics, create multiple files (each with its own incremented number)
 - Never overwrite existing files — always create new ones with the next number

@@ -26,4 +26,4 @@ Record a decision in DECISIONS.md and optionally resolve an open question.
 
 - Only record **major decisions** — not every micro-choice
 - Include enough context that someone reading DECISIONS.md months later understands what was decided and why
-- Do NOT modify canonical files (delivery/, HANDOFF.md) — that's what `/sync` is for
+- Do NOT modify canonical files (docs/, HANDOFF.md, ROADMAP.md) — that's what `/sync` is for

@@ -6,7 +6,7 @@ Review existing code or delivery artifacts for quality, consistency, and complet
 
 - `/mae-review` — review recent changes (git diff)
 - `/mae-review {path}` — review a specific file or directory
-- `/mae-review prd` or `sdd` — review a delivery artifact by name
+- `/mae-review requirements` or `design` — review a delivery artifact by name
 
 ## Behavior
 
@@ -17,26 +17,30 @@ Review existing code or delivery artifacts for quality, consistency, and complet
    - Artifact name: review the delivery artifact
 2. **Load reference material:**
 
-   - For code: SDD.md (architecture), coding standards
-   - For PRD: explore artifacts, DECISIONS.md
-   - For SDD: PRD.md (does design match requirements?)
-3. **Generate review** using `templates/review.md` structure, findings categorized:
+   - For code: DESIGN.md (architecture), coding standards
+   - For requirements: explore artifacts, DECISIONS.md
+   - For design: REQUIREMENTS.md (does design match requirements?)
+3. **Generate review** using `.maestro/templates/review.md` structure, findings categorized:
 
    - 🔴 **Critical** — must fix (security, correctness, data loss risk)
    - 🟡 **Important** — should fix (consistency, maintainability, performance)
    - 🟢 **Suggestion** — nice to have (style, naming, documentation)
 4. **Cross-reference** with canonical artifacts:
 
-   - Code matches SDD? Flag `DRIFT:` if not.
-   - SDD matches PRD? Flag `CONSISTENCY:` if not.
+   - Code matches DESIGN.md? Flag `DRIFT:` if not.
+   - DESIGN.md matches REQUIREMENTS.md? Flag `CONSISTENCY:` if not.
 5. **Save report** to session folder
-6. **On-demand folder:** If creating `delivery/05-review/` for the first time, offer to create it.
+6. **On-demand folder:** If creating `docs/06-review/` for the first time, offer to create it.
 
 ## Output Behaviors
 
 - List findings by severity
 - Quote the specific code/text being reviewed
 - Suggest concrete fixes, not just "improve this"
+
+## Skip When
+- No changes to review — nothing new since last review
+- Quick one-off fix that doesn't warrant formal review
 
 ## What Review Is NOT
 

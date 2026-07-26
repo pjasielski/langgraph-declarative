@@ -1,13 +1,12 @@
 [project]
 name = "langgraph-declarative"
-mode = "solo"
+description = "Declarative graph definition for LangGraph — topology in YAML, logic in Python"
+session_visibility = "gitignored"
+question_style = "async"
+ai_tools = ["claude"]
 
-[tools]
-active = ["claude-code"]
-
-# Output tier default: "standard" | "verbose" | "caveman"
-# Override per-command with -v or -c flags
-output_tier = "standard"
-
-# Uncomment to share sessions with team (remove .sessions/ from .gitignore too):
-# share_sessions = true
+# Uncomment and fill in to enable profile-aware behavior:
+# [user]
+# description = "Your role and expertise"
+# strengths = ["area1", "area2"]
+# needs_help = ["area3", "area4"]

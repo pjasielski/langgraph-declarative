@@ -1,4 +1,6 @@
-# Task {NNN}: {Title}
+# Task M{MM}.{NN}: {Title}
+**ID:** M{MM}.{NN}  (matches ROADMAP # column and filename `M{MM}.{NN}-{slug}.md`)
+**Milestone:** M{MM}
 **Status:** todo | in-progress | blocked | done
 **Priority:** high | medium | low
 **Assigned:** {name or "unassigned"}

@@ -1,16 +1,16 @@
-# SDD: {Product / Feature Name}
+# DESIGN: {Product / Feature Name}
 
 **Date:** {YYYY-MM-DD}
 **Version:** {v1}
 **Status:** Draft | In Review | Approved
-**PRD:** {link to delivery/02-prd/PRD.md}
+**Requirements:** {link to docs/02-requirements/REQUIREMENTS.md}
 
 <!--
-  Maestro SDD Template (Solution Design Document)
+  Maestro Design Template (Technical Architecture)
   Core sections: always include (1-6)
   Optional sections: include when relevant (marked OPTIONAL)
   Target: 2,000-4,000 words | Hard max: 6,000 words
-  If exceeding max, split into SDD.md + component-{name}.md
+  If exceeding max, split into DESIGN.md + component-{name}.md
 -->
 
 ---

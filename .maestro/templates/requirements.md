@@ -1,16 +1,16 @@
-# PRD: {Product / Feature Name}
+# REQUIREMENTS: {Product / Feature Name}
 
 **Date:** {YYYY-MM-DD}
 **Version:** {v1}
 **Status:** Draft | In Review | Approved
-**Explore report:** {link to delivery/01-explore/ if applicable}
+**Explore report:** {link to docs/01-explore/ if applicable}
 
 <!--
-  Maestro PRD Template
+  Maestro Requirements Template
   Core sections: always include (1-7)
   Optional sections: include when relevant (marked OPTIONAL)
   Target: 1,500-3,000 words | Hard max: 5,000 words
-  If exceeding max, split into PRD.md + user-stories.md
+  If exceeding max, split into REQUIREMENTS.md + user-stories.md
 -->
 
 ---

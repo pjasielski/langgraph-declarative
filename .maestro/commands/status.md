@@ -21,7 +21,7 @@ $ARGUMENTS — optional sub-command: tasks, decisions, questions
 2. Read `OPEN_QUESTIONS.md` and count questions by priority
 3. Read `WORKLOG.md` for last 3 entries
 4. Check `.sessions/` for the latest session folder
-5. Check `delivery/04-plan/tasks/` for task counts by status
+5. Check `docs/04-plan/tasks/` for task counts by status
 6. Check `DECISIONS.md` for recent unsynced decisions
 
 Output:
@@ -43,7 +43,7 @@ RECENT ACTIVITY
 
 ### Tasks (/status tasks)
 
-Read all files in `delivery/04-plan/tasks/`. Group by status:
+Read all files in `docs/04-plan/tasks/`. Group by status:
 
 ```
 TASK BOARD
