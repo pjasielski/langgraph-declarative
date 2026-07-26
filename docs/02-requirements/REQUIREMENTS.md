@@ -1,9 +1,9 @@
-# PRD: langgraph-declarative
+# Requirements: langgraph-declarative
 
 **Date:** 2026-05-30
 **Version:** v1
 **Status:** Draft
-**Explore report:** delivery/01-explore/explore-report.md
+**Explore report:** [docs/01-explore/explore-report.md](../01-explore/explore-report.md)
 
 ---
 

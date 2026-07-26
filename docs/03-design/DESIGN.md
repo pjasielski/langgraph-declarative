@@ -1,9 +1,9 @@
-# SDD: langgraph-declarative
+# Design: langgraph-declarative
 
 **Date:** 2026-05-30
 **Version:** v1
 **Status:** Draft
-**PRD:** delivery/02-prd/PRD.md
+**Requirements:** [docs/02-requirements/REQUIREMENTS.md](../02-requirements/REQUIREMENTS.md)
 
 ---
 

@@ -24,6 +24,6 @@ Create a public-facing `ROADMAP.md` in the repo root that clearly communicates w
 - `README.md` (edit — add link)
 
 ## Notes
-- Source material: `TODO.md`, `delivery/02-prd/PRD.md` (section 5), `.sessions/001-exploration/04_delivery-approach-and-open-items.md`
+- Source material: `TODO.md` (since folded into `ROADMAP.md`), `docs/02-requirements/REQUIREMENTS.md` (section 5), `.sessions/001-exploration/04_delivery-approach-and-open-items.md`
 - Tone: user-facing, not internal. Written for someone evaluating the library.
 - Keep it concise — each item is 1-2 lines, not a spec

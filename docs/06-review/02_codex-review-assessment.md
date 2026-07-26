@@ -1,7 +1,7 @@
 # Assessment: Codex Project Review
 
 **Date:** 2026-06-01
-**Source:** delivery/05-review/01_langgraph-declarative-project-review.md
+**Source:** docs/06-review/01_langgraph-declarative-project-review.md
 **Reviewed by:** Claude (Opus 4.6)
 **Scope:** Validate each Codex finding against actual code, PRD, SDD, and delivery plan
 

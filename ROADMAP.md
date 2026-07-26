@@ -46,6 +46,11 @@ These are possibilities, not commitments. They may or may not make sense after r
 - **Graph diffing** — compare two YAML files and report topology changes
 - **Hot-reload** — watch a YAML file and recompile the graph on change
 - **CLI tool** — `lgd validate workflow.yaml`, `lgd visualize workflow.yaml`
-- **YAML include/import** — shared node definitions across workflows
 - **Graph versioning** — run A/B tests between YAML workflow variants
 - **Export to LangGraph Studio format**
+
+*(YAML include/import shipped in v2 as `imports:` — see [cross_file_imports](examples/cross_file_imports/).)*
+
+---
+
+Delivery detail — milestone tracker, task index, and known risks — lives in [docs/04-plan/ROADMAP.md](docs/04-plan/ROADMAP.md).
