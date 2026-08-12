@@ -86,6 +86,10 @@ Non-technical stakeholders (PMs, analysts, domain experts) cannot read or modify
 | FR-16 | JSON Schema for YAML files | Nice | v1.1 | Published schema enables IDE autocomplete for workflow YAML |
 | FR-17 | Subgraph composition | Should | v2 | `subgraph: "file.yaml"` in node definition compiles and embeds a sub-graph |
 | FR-18 | Simple value-matching routing | Nice | v2 | `match: "state.field"` + `targets:` for routing without a Python function |
+| FR-19 | Caller-supplied checkpointer | Must | v2.1 | `build_graph(..., checkpointer=saver)` reaches `graph.compile()`; omitting it compiles with `checkpointer=None` (unchanged behaviour) |
+| FR-20 | `destinations:` on node declarations | Should | v2.1 | `destinations: [a, b]` forwards to `add_node(..., destinations=...)` so `Command(goto=...)` nodes render correct Mermaid edges |
+| FR-21 | Static interrupt points in YAML | Should | v2.1 | `interrupt_before: [node]` / `interrupt_after: [node]` at graph level reach `compile()`; names cross-validated against declared nodes |
+| FR-22 | Caller-supplied store | Nice | v2.1 | `build_graph(..., store=store)` reaches `graph.compile()` for cross-thread memory |
 
 ### 4.2 Non-Functional Requirements
 
@@ -128,6 +132,22 @@ Non-technical stakeholders (PMs, analysts, domain experts) cannot read or modify
 - LangGraph Template packaging (v2)
 - Expression-based routing / `eval()` (rejected for security)
 - CLI tooling (future idea)
+
+### 5.2.1 In Scope (v2.1 — human-in-the-loop)
+
+Added after the gap surfaced in real use: the library could not express an approval
+gate, because nothing in the call chain could reach `graph.compile(checkpointer=...)`.
+See FR-19..FR-22 and Epic 9.
+
+- Caller-supplied `checkpointer` threaded through all four public entry points
+- Optional `store` for cross-thread memory
+- `destinations:` on node declarations, for `Command(goto=...)` routing nodes
+- `interrupt_before:` / `interrupt_after:` static interrupt points in YAML
+
+Explicitly **not** in scope: shipping a default checkpointer. Ownership flips by
+run mode — under `langgraph dev` / LangGraph Platform the server owns it and a
+compile-time checkpointer is silently ignored, so defaulting to `InMemorySaver`
+would look like it worked while doing nothing. The checkpointer stays opt-in.
 
 ### 5.3 Assumptions
 
@@ -191,6 +211,18 @@ Non-technical stakeholders (PMs, analysts, domain experts) cannot read or modify
 | US-4.2 | As a developer, I want `build_graph()` to default to `MessagesState` so that chatbot graphs need no state class | Omitting `state_class` uses `MessagesState`; providing it overrides | Should |
 | US-4.3 | As a developer, I want a `GraphBuilder` class for more control so that I can customize compilation | `GraphBuilder(registry, state_class).build("file.yaml")` works | Must |
 | US-4.4 | As a developer, I want to install via pip so that I can use it in any project | `pip install langgraph-declarative` installs from PyPI | Must |
+
+### Epic 9: Human-in-the-Loop
+**Description:** Make approval gates, pauses for input, and resumable runs expressible — the checkpointer plus the schema fields that support a `Command`-routing approval node
+**Priority:** 1
+
+| Story ID | User Story | Acceptance Criteria | Priority |
+|---|---|---|---|
+| US-9.1 | As a developer, I want to pass a `checkpointer` to `build_graph()` so that `interrupt()` can pause and resume | Checkpointer reaches `compile()`; omitting it is unchanged behaviour; works from all four entry points | Must |
+| US-9.2 | As a developer, I want a graph to pause at an approval node and resume with accept/reject so that writes are gated on a human | Run returns `__interrupt__`; resume-accept performs the side effect; resume-reject leaves it untouched | Must |
+| US-9.3 | As a developer, I want state to survive across turns on one `thread_id` so that a paused run is resumable later | Second invocation on the same `thread_id` sees prior state | Must |
+| US-9.4 | As a developer, I want `Command(goto=...)` nodes to render correctly so that the Mermaid diagram stays trustworthy | `destinations:` produces the real edges instead of a spurious `--> __end__` | Should |
+| US-9.5 | As a developer, I want to declare `interrupt_before:` in YAML so that a static pause needs no Python change | Listed nodes reach `compile()`; unknown names fail cross-validation with a suggestion | Should |
 
 ---
 

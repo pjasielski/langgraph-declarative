@@ -39,6 +39,23 @@ Larger features that extend what the library can express.
 
 > v1, v1.1, and v2 are internal milestone labels, not package version numbers. See [CHANGELOG.md](CHANGELOG.md) for package releases.
 
+## v2.1 — Human-in-the-loop (planned)
+
+Approval gates, pauses for input, and resumable runs — the one class of workflow the
+library cannot currently express. Every change is additive and backward compatible.
+
+| Feature | What it enables |
+|---------|----------------|
+| **Caller-supplied `checkpointer`** | `build_graph(..., checkpointer=saver)` reaches `compile()`, so `interrupt()` can pause a run and resume it later on the same `thread_id`. Never defaulted — see below. |
+| **`destinations:` on nodes** | Approval nodes that route themselves with `Command(goto=...)` have no static edges; declaring their destinations keeps the Mermaid diagram correct. |
+| **`interrupt_before:` / `interrupt_after:`** | Declare a static pause point in YAML — an approval gate with no Python change. |
+| **Optional `store`** | Cross-thread memory, alongside the per-thread checkpointer. |
+
+The checkpointer is deliberately **not** defaulted. Ownership flips by run mode: in
+your own process you own it, but under `langgraph dev` / LangGraph Platform the server
+owns it and a compile-time checkpointer is silently ignored. A built-in default would
+appear to work while doing nothing.
+
 ## Ideas (unvalidated)
 
 These are possibilities, not commitments. They may or may not make sense after real-world usage.

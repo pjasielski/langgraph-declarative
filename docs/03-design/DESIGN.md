@@ -108,6 +108,21 @@ Technical architecture for `langgraph-declarative` — a Python library that com
 - **Decision:** Use Pydantic `BaseModel` subclasses to define the expected YAML structure. Parse YAML to dict, then validate with Pydantic.
 - **Consequences:** Pydantic is already a dependency (used by LangGraph). Enables JSON Schema export in v1.1 for IDE autocomplete. Gives typed access to config fields inside the builder.
 
+**ADR-004: Checkpointer is caller-supplied, never defaulted (v2.1, HITL)**
+- **Context:** The library could not express human-in-the-loop at all. `interrupt()` pauses a graph by *persisting state at the pause point*, and that persistence is the checkpointer — so without one, a pause cannot be resumed and there is no `thread_id` scoping. `_build()` called `graph.compile()` with no arguments and no parameter on the call chain could reach it.
+- **Decision:** Thread an optional `checkpointer` (and `store`) through the public entry points to `compile()`. Do **not** default to `InMemorySaver`.
+- **Consequences:** `compile(checkpointer=None)` is exactly today's behaviour, so the change is backward compatible. Defaulting was rejected because ownership flips by run mode: under `langgraph dev` / LangGraph Platform the *server* owns the checkpointer and one passed at compile time is silently ignored — a default would appear to work while doing nothing, which is worse than the current honest failure.
+
+**ADR-005: Subgraphs inherit the parent's checkpointer (v2.1, HITL)**
+- **Context:** `_add_nodes` compiles subgraph files recursively via `_build_from_file`. If the builder holds a checkpointer, it is ambiguous whether nested compiles should also receive it.
+- **Decision:** Pass the checkpointer only to the top-level `compile()`. Nested subgraph compiles get none.
+- **Consequences:** Verified empirically against LangGraph 1.2.2: a subgraph compiled *without* a checkpointer still interrupts and resumes correctly when the parent graph has one — the parent's persistence covers the whole tree. Passing one to nested compiles is unnecessary, and LangGraph treats a checkpointer on a subgraph as a distinct concern (it is how you would deliberately isolate subgraph persistence), so doing it implicitly would be wrong.
+
+**ADR-006: `destinations:` is declared per node, not inferred (v2.1, HITL)**
+- **Context:** An approval node routes itself with `Command(goto=...)` and therefore has no static outgoing edges. `add_node()` was called without `destinations=`, so LangGraph cannot know where such a node leads.
+- **Decision:** Add an optional `destinations:` list to the node schema and forward it to `add_node(..., destinations=...)`.
+- **Consequences:** The diagram is a headline feature, and the failure is worse than "missing edges": verified on LangGraph 1.2.2, a `Command(goto=...)` node with no `destinations` renders a **spurious `approval --> __end__` edge** — an actively wrong diagram, not merely an incomplete one. Inference is not possible without parsing function bodies, so the list is declared. Edge validation is unaffected: `_add_edges` iterates declared edges, so a node with none is already legal.
+
 **ADR-003: Loader abstraction for v2 extensibility**
 - **Context:** V1 loads from YAML files. V2 may support databases, APIs, or other sources.
 - **Decision:** The `Loader` is a simple function (`load_config(source) -> dict`) that the builder calls. V1 implements YAML file loading. V2 can add loaders without changing the builder.
@@ -126,6 +141,14 @@ The YAML file is the primary data model. Pydantic models mirror this structure f
 nodes:
   - name: "node_name"              # unique within this file
     function: "registry_node_name"  # must exist in registry.nodes
+    destinations: ["node_a", "END"] # optional (v2.1) — where this node can route
+                                    # itself via Command(goto=...); diagram-only,
+                                    # needed when the node has no static edges
+
+# Optional (v2.1) — static interrupt points. Names must be declared nodes.
+# The dynamic alternative is calling interrupt() inside a node function.
+interrupt_before: ["approval"]
+interrupt_after: []
 
 edges:
   # Simple edge
