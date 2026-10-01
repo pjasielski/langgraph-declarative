@@ -71,10 +71,9 @@ Stack: Python 3.10+, LangGraph ≥0.2, Pydantic v2, PyYAML, hatchling.
 |------|-------|
 | Requirements | `docs/02-requirements/REQUIREMENTS.md` |
 | Design | `docs/03-design/DESIGN.md` |
-| Delivery roadmap (canonical) | `docs/04-plan/ROADMAP.md` |
+| Roadmap (the only one) | `docs/04-plan/ROADMAP.md` |
 | Task files | `docs/04-plan/tasks/` |
 | Reviews | `docs/06-review/` |
-| Public roadmap | `ROADMAP.md` |
 | Decision log | `DECISIONS.md` |
 
 ## Recent Changes

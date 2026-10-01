@@ -27,4 +27,4 @@ Always save substantive responses to a file in the session folder unless the res
 
 `OPEN_QUESTIONS.md` and `WORKLOG.md` are **intentionally absent** from this repo. `MAESTRO.md`, `/status`, `/sync`, and `/decide` reference them — treat that as expected, do not recreate them. Open questions go in the session `_summary.md`; confirmed decisions go straight to `DECISIONS.md`. If `install.sh` regenerates the two stubs, delete them again.
 
-`docs/04-plan/ROADMAP.md` is the canonical delivery roadmap. The root `ROADMAP.md` is a user-facing summary of it — update the `docs/` one first.
+`docs/04-plan/ROADMAP.md` is the **only** roadmap, per the Maestro standard. The root `ROADMAP.md` was removed in session 11 — it duplicated information and drifted. Do not recreate it; README links point at the `docs/` one.
