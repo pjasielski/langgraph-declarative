@@ -30,18 +30,127 @@ task index all live here.
 | M03 | Declarative surface | State in YAML, match routing, Mermaid, JSON Schema | 0.2.0 | ✅ done |
 | M04 | Composition & config | Subgraphs, imports, LLM/tools, DB source, template | 0.2.0 | ✅ done |
 | M05 | Human-in-the-loop | Checkpointer, destinations, static interrupts, store | 0.3.0 | ✅ done (unreleased) |
-| M06 | Hardening for 0.3.0 | Correctness fixes, strict schema, compatibility band, packaging, release | 0.3.0 | ☐ todo |
+| M06 | Hardening | Correctness fixes, strict schema, compatibility band, packaging, release | 0.3.0 | ☐ todo |
 | M07 | Capabilities | Node params, side-effect-free diagrams, loader pipeline, graph lint | 0.4.0 | ☐ todo |
 | M08 | Embedding & platform adapters | Neutral IR, restricted mode, digests — **demand-gated** | — | ⏳ gated |
 
-M01–M04 shipped as `v0.2.0`. M05 is merged but unreleased: 0.3.0 ships M05 and M06
+M01–M02 were the internal 0.1.0; M01–M04 shipped publicly as `v0.2.0`. M05 is done
+but unreleased (committed on `feat/hitl`): 0.3.0 ships M05 and M06
 together, so the HITL feature does not land on top of known correctness bugs and an
 untested dependency range. The v1 / v1.1 / v2 labels used in earlier docs were
 milestone names, not package versions — see [CHANGELOG.md](../../CHANGELOG.md).
 
 ---
 
-## Milestone M06: Hardening for 0.3.0
+## Milestone M01: Core library (0.1.0)
+
+✅ Shipped.
+
+| # | Title | Effort | Status |
+|---|-------|--------|--------|
+| 001 | Scaffold project structure | S | ✅ done |
+| 002 | Implement errors module | S | ✅ done |
+| 003 | Implement registry module + tests | M | ✅ done |
+| 004 | Implement schema module + tests | M | ✅ done |
+| 005 | Implement loader module + tests | S | ✅ done |
+| 006 | Implement builder module + tests | L | ✅ done |
+| 007 | Implement public API + integration tests | M | ✅ done |
+| 008 | Create examples | S | ✅ done |
+| 009 | Finalize packaging and README | S | ✅ done |
+
+---
+
+## Milestone M02: Examples & hardening (0.1.0)
+
+✅ Shipped.
+
+| # | Title | Effort | Status |
+|---|-------|--------|--------|
+| 010 | Add fan-out and Send examples | S | ✅ done |
+| 011 | Add custom state example | S | ✅ done |
+| 012 | Create ROADMAP.md | S | ✅ done |
+| 013 | Edge-case tests and hardening | S | ✅ done |
+
+---
+
+## Milestone M03: Declarative surface (0.2.0)
+
+✅ Shipped.
+
+| # | Title | Effort | Requirement | Status |
+|---|-------|--------|-------------|--------|
+| 014 | State declaration in YAML | L | FR-14 | ✅ done |
+| 015 | Auto-Mermaid generation | S | FR-15 | ✅ done |
+| 016 | JSON Schema for YAML files | S | FR-16 | ✅ done |
+| 017 | Match routing syntax | M | FR-18 | ✅ done |
+
+---
+
+## Milestone M04: Composition & config (0.2.0)
+
+✅ Shipped.
+
+| # | Title | Effort | Status |
+|---|-------|--------|--------|
+| 018 | Subgraph composition | XL | ✅ done |
+| 019 | Tool configuration in YAML | L | ✅ done |
+| 020 | LLM configuration per node | M | ✅ done |
+| 021 | Database-driven graph source | L | ✅ done |
+| 022 | LangGraph Template packaging | S | ✅ done |
+| 023 | Cross-file node references | M | ✅ done |
+
+---
+
+## Milestone M05: Human-in-the-loop (0.3.0)
+
+Make approval gates, pauses for input, and resumable runs expressible in YAML — the
+one capability class the library could not express at all.
+
+| # | Item | Priority | Effort | Depends | Status | Task | Source |
+|---|------|----------|--------|---------|--------|------|--------|
+| M05.01 | **Thread `checkpointer` through all four entry points to `compile()`** | P1 | S | — | ✅ done | [M05.01](tasks/M05.01-checkpointer-threading.md) | HITL handoff |
+| M05.02 | **Behavioural HITL test — pause, resume-accept, resume-reject, thread persistence** | P1 | M | M05.01 | ✅ done | [M05.02](tasks/M05.02-hitl-behavioural-test.md) | HITL handoff |
+| M05.03 | **`destinations:` node field for `Command(goto=...)` routing nodes** | P2 | S | — | ✅ done | [M05.03](tasks/M05.03-destinations-field.md) | HITL handoff |
+| M05.04 | **`interrupt_before:` / `interrupt_after:` static interrupt points in YAML** | P2 | S | M05.01 | ✅ done | [M05.04](tasks/M05.04-static-interrupts.md) | HITL handoff |
+| M05.05 | **Runnable `human_in_the_loop` example + README/schema docs** | P1 | M | M05.01, M05.03 | ✅ done | [M05.05](tasks/M05.05-hitl-example-docs.md) | Project convention |
+| M05.06 | **Optional `store` passthrough for cross-thread memory** | P3 | S | M05.01 | ✅ done | [M05.06](tasks/M05.06-store-passthrough.md) | HITL handoff |
+
+**Done when:** a YAML-defined graph with an approval node pauses on a write, resumes
+with accept (side effect happens) or reject (side effect does not), survives across
+turns on one `thread_id`, and renders a correct Mermaid diagram — with the checkpointer
+supplied by the caller and never defaulted.
+
+### Execution notes
+
+**Dependency graph:**
+```
+M05.01 ──┬─→ M05.02
+         ├─→ M05.04
+         ├─→ M05.06
+         └─┐
+M05.03 ────┴─→ M05.05
+```
+
+**Critical path:** M05.01 → M05.02 (the capability is not proven until the
+behavioural test passes)
+**Parallelizable:** M05.03 is independent of M05.01.
+
+**Design constraints** (see ADR-004..006 in DESIGN.md):
+- Never default the checkpointer. Under `langgraph dev` / LangGraph Platform the
+  server owns it and a compile-time checkpointer is silently ignored — a default
+  would look like it worked while doing nothing.
+- Do **not** pass the checkpointer to nested subgraph compiles. Verified on
+  LangGraph 1.2.2: the parent's checkpointer already covers subgraph interrupts.
+- Assert **side effects**, not return status. A graph that returns cleanly having
+  written nothing — or having written despite a rejection — passes a status test
+  and fails the only thing that matters.
+
+**Backward compatibility:** every item is additive. `compile(checkpointer=None)`
+is the previous behaviour, and the new YAML fields are all optional.
+
+---
+
+## Milestone M06: Hardening (0.3.0)
 
 Fix what an external review found (verified and reproduced in session 013) before
 anything else is released. Every P1 bug here was reproduced. Each fix lands with its
@@ -105,7 +214,7 @@ M07.03 follows M06.02; M07.06 follows M06.05. P3 items are droppable.
 
 ---
 
-## Milestone M08: Embedding & platform adapters (demand-gated)
+## Milestone M08: Embedding & platform adapters (demand-gated, unversioned)
 
 Work that only pays off when a second compile target exists — e.g. emitting another
 platform's workflow format instead of a LangGraph graph. **Do not start without a
@@ -121,102 +230,6 @@ stay in `.sessions/013-codex-review/` (not public).
 
 Recommended first step if demand is confirmed: a proof-of-concept adapter as a
 **separate package** consuming the strict `GraphConfig`, not changes to the core.
-
----
-
-## Milestone M05: Human-in-the-loop (0.3.0)
-
-Make approval gates, pauses for input, and resumable runs expressible in YAML — the
-one capability class the library could not express at all.
-
-| # | Item | Priority | Effort | Depends | Status | Task | Source |
-|---|------|----------|--------|---------|--------|------|--------|
-| M05.01 | **Thread `checkpointer` through all four entry points to `compile()`** | P1 | S | — | ✅ done | [M05.01](tasks/M05.01-checkpointer-threading.md) | HITL handoff |
-| M05.02 | **Behavioural HITL test — pause, resume-accept, resume-reject, thread persistence** | P1 | M | M05.01 | ✅ done | [M05.02](tasks/M05.02-hitl-behavioural-test.md) | HITL handoff |
-| M05.03 | **`destinations:` node field for `Command(goto=...)` routing nodes** | P2 | S | — | ✅ done | [M05.03](tasks/M05.03-destinations-field.md) | HITL handoff |
-| M05.04 | **`interrupt_before:` / `interrupt_after:` static interrupt points in YAML** | P2 | S | M05.01 | ✅ done | [M05.04](tasks/M05.04-static-interrupts.md) | HITL handoff |
-| M05.05 | **Runnable `human_in_the_loop` example + README/schema docs** | P1 | M | M05.01, M05.03 | ✅ done | [M05.05](tasks/M05.05-hitl-example-docs.md) | Project convention |
-| M05.06 | **Optional `store` passthrough for cross-thread memory** | P3 | S | M05.01 | ✅ done | [M05.06](tasks/M05.06-store-passthrough.md) | HITL handoff |
-
-**Done when:** a YAML-defined graph with an approval node pauses on a write, resumes
-with accept (side effect happens) or reject (side effect does not), survives across
-turns on one `thread_id`, and renders a correct Mermaid diagram — with the checkpointer
-supplied by the caller and never defaulted.
-
-### Execution notes
-
-**Dependency graph:**
-```
-M05.01 ──┬─→ M05.02
-         ├─→ M05.04
-         ├─→ M05.06
-         └─┐
-M05.03 ────┴─→ M05.05
-```
-
-**Critical path:** M05.01 → M05.02 (the capability is not proven until the
-behavioural test passes)
-**Parallelizable:** M05.03 is independent of M05.01.
-
-**Design constraints** (see ADR-004..006 in DESIGN.md):
-- Never default the checkpointer. Under `langgraph dev` / LangGraph Platform the
-  server owns it and a compile-time checkpointer is silently ignored — a default
-  would look like it worked while doing nothing.
-- Do **not** pass the checkpointer to nested subgraph compiles. Verified on
-  LangGraph 1.2.2: the parent's checkpointer already covers subgraph interrupts.
-- Assert **side effects**, not return status. A graph that returns cleanly having
-  written nothing — or having written despite a rejection — passes a status test
-  and fails the only thing that matters.
-
-**Backward compatibility:** every item is additive. `compile(checkpointer=None)`
-is the previous behaviour, and the new YAML fields are all optional.
-
----
-
-## Shipped milestones
-
-### M01 — Core library
-
-| # | Title | Effort | Status |
-|---|-------|--------|--------|
-| 001 | Scaffold project structure | S | ✅ done |
-| 002 | Implement errors module | S | ✅ done |
-| 003 | Implement registry module + tests | M | ✅ done |
-| 004 | Implement schema module + tests | M | ✅ done |
-| 005 | Implement loader module + tests | S | ✅ done |
-| 006 | Implement builder module + tests | L | ✅ done |
-| 007 | Implement public API + integration tests | M | ✅ done |
-| 008 | Create examples | S | ✅ done |
-| 009 | Finalize packaging and README | S | ✅ done |
-
-### M02 — Examples & hardening
-
-| # | Title | Effort | Status |
-|---|-------|--------|--------|
-| 010 | Add fan-out and Send examples | S | ✅ done |
-| 011 | Add custom state example | S | ✅ done |
-| 012 | Create ROADMAP.md | S | ✅ done |
-| 013 | Edge-case tests and hardening | S | ✅ done |
-
-### M03 — Declarative surface
-
-| # | Title | Effort | Requirement | Status |
-|---|-------|--------|-------------|--------|
-| 014 | State declaration in YAML | L | FR-14 | ✅ done |
-| 015 | Auto-Mermaid generation | S | FR-15 | ✅ done |
-| 016 | JSON Schema for YAML files | S | FR-16 | ✅ done |
-| 017 | Match routing syntax | M | FR-18 | ✅ done |
-
-### M04 — Composition & config
-
-| # | Title | Effort | Status |
-|---|-------|--------|--------|
-| 018 | Subgraph composition | XL | ✅ done |
-| 019 | Tool configuration in YAML | L | ✅ done |
-| 020 | LLM configuration per node | M | ✅ done |
-| 021 | Database-driven graph source | L | ✅ done |
-| 022 | LangGraph Template packaging | S | ✅ done |
-| 023 | Cross-file node references | M | ✅ done |
 
 ---
 
