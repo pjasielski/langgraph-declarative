@@ -122,6 +122,9 @@ def build_graph_from_db(
     registry: "Registry",  # noqa: F821
     db_path: str | Path,
     state_class: type | None = None,
+    *,
+    checkpointer=None,
+    store=None,
 ):
     """One-line graph compilation from a database-stored definition.
 
@@ -130,11 +133,19 @@ def build_graph_from_db(
         registry: Registry containing the node/router functions.
         db_path: Path to the SQLite database file.
         state_class: State annotation override (YAML ``state:`` still wins).
+        checkpointer: Persistence backend enabling ``interrupt()`` / resume.
+            Not defaulted — see ``build_graph()``.
+        store: Cross-thread memory backend (optional).
     """
     from langgraph_declarative.builder import GraphBuilder
     from langgraph_declarative.schema import validate_config
 
     raw = SQLiteLoader(db_path).load(source_id)
     config = validate_config(raw)
-    builder = GraphBuilder(registry=registry, state_class=state_class)
+    builder = GraphBuilder(
+        registry=registry,
+        state_class=state_class,
+        checkpointer=checkpointer,
+        store=store,
+    )
     return builder.build(config)

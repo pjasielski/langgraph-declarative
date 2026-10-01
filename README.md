@@ -15,7 +15,7 @@
 
 
 
-[Quickstart](#quickstart) · [Features](#features) · [YAML reference](#yaml-reference) · [Examples](https://github.com/pjasielski/langgraph-declarative/blob/main/examples/README.md) · [Roadmap](https://github.com/pjasielski/langgraph-declarative/blob/main/ROADMAP.md)
+[Quickstart](#quickstart) · [Features](#features) · [YAML reference](#yaml-reference) · [Human-in-the-loop](#human-in-the-loop) · [Examples](https://github.com/pjasielski/langgraph-declarative/blob/main/examples/README.md) · [Roadmap](https://github.com/pjasielski/langgraph-declarative/blob/main/docs/04-plan/ROADMAP.md)
 
 </div>
 
@@ -111,6 +111,7 @@ Three pieces: a **registry** of Python functions, a **definition** of the topolo
 | LLM config & tool binding | `llm:` + `tools:` | v2 | [llm_and_tools](https://github.com/pjasielski/langgraph-declarative/tree/main/examples/llm_and_tools/) |
 | Database-stored workflows | `SQLiteLoader`, `build_graph_from_db()` | v2 | [db_workflow](https://github.com/pjasielski/langgraph-declarative/tree/main/examples/db_workflow/) |
 | LangGraph project template | — | v2 | [template/](https://github.com/pjasielski/langgraph-declarative/tree/main/template/) |
+| Human-in-the-loop | `build_graph(..., checkpointer=...)`, `destinations:`, `interrupt_before:` | v2.1 | [human_in_the_loop](https://github.com/pjasielski/langgraph-declarative/tree/main/examples/human_in_the_loop/) |
 
 > [!NOTE]
 > v1 / v1.1 / v2 are milestone labels, not package versions. All three have shipped — see [CHANGELOG.md](https://github.com/pjasielski/langgraph-declarative/blob/main/CHANGELOG.md) for releases.
@@ -138,6 +139,9 @@ imports:                            # merge node declarations from other files
   - file: "shared_nodes.yaml"
     nodes: ["error_handler"]        # omit to import all nodes
 
+interrupt_before: ["approval"]      # pause before these nodes run (needs a checkpointer)
+interrupt_after: []                 # pause after these nodes run
+
 nodes:
   - name: "classifier"
     function: "classify"            # registered via @registry.node()
@@ -147,6 +151,9 @@ nodes:
     function: "agent_fn"            # function must accept an `llm` parameter to opt in
     llm: { model: "claude-haiku-4-5" }  # node-level override, merged over graph llm
     tools: ["get_weather"]          # @registry.tool() names or "module.path:attr"
+  - name: "approval"
+    function: "approval_fn"
+    destinations: ["execute", "END"]  # where this node routes itself via Command(goto=)
 
 edges:
   - source: "START"                 # START, END, or a node name
@@ -172,6 +179,55 @@ edges:
 > ```
 > The schema ships at [`schema/workflow.schema.json`](https://github.com/pjasielski/langgraph-declarative/blob/main/schema/workflow.schema.json), or regenerate it with `export_json_schema()`.
 
+## Human-in-the-loop
+
+Pause a graph for human approval, then resume it. Pass a checkpointer — `interrupt()`
+pauses by *persisting* state, so without one a pause cannot be resumed.
+
+```python
+from langgraph.checkpoint.memory import InMemorySaver
+from langgraph.types import Command, interrupt
+
+@registry.node("approval")
+def approval(state):
+    decision = interrupt({"question": "Approve this write?"})
+    if decision == "accept":
+        return Command(goto="execute")
+    return Command(goto="END")
+
+graph = build_graph("workflow.yaml", registry, checkpointer=InMemorySaver())
+
+config = {"configurable": {"thread_id": "run-1"}}
+result = graph.invoke({"request": "write"}, config)   # pauses: __interrupt__ in result
+graph.invoke(Command(resume="accept"), config)        # resumes and executes
+```
+
+Give the approval node a `destinations:` list in YAML. It routes itself with
+`Command(goto=...)` and so has no static outgoing edges — without `destinations` the
+Mermaid diagram invents a wrong `approval --> END` edge:
+
+```yaml
+nodes:
+  - name: "approval"
+    function: "approval"
+    destinations: ["execute", "END"]
+```
+
+For a pause that needs no Python at all, declare it in YAML instead:
+
+```yaml
+interrupt_before: ["approval"]
+```
+
+> [!IMPORTANT]
+> **The checkpointer is yours to supply — this library never defaults one.** Ownership
+> flips by run mode: in your own process (CLI, FastAPI, script) you own it, but under
+> `langgraph dev` / LangGraph Platform the **server** owns it and a checkpointer passed
+> at compile time is silently ignored. A built-in default would appear to work locally
+> and quietly do nothing once deployed.
+
+See [human_in_the_loop](https://github.com/pjasielski/langgraph-declarative/tree/main/examples/human_in_the_loop/) for a runnable approval gate.
+
 ## API
 
 | Function / Class | Description |
@@ -180,20 +236,20 @@ edges:
 | `@registry.node("name")` | Register a node function (transforms state) |
 | `@registry.router("name")` | Register a router (returns a routing key or a list of `Send`) |
 | `@registry.tool("name")` | Register a tool for `tools:` binding |
-| `build_graph(path, registry, state_class=None)` | YAML file → compiled `CompiledStateGraph` |
-| `build_graph_from_db(source, registry, db_path)` | DB-stored definition → compiled graph (`"flow"` or `"flow@2"`) |
+| `build_graph(path, registry, state_class=None, *, checkpointer=None, store=None)` | YAML file → compiled `CompiledStateGraph` |
+| `build_graph_from_db(source, registry, db_path, *, checkpointer=None, store=None)` | DB-stored definition → compiled graph (`"flow"` or `"flow@2"`) |
 | `draw_mermaid(path, registry, output_path=None)` | Compile and render a Mermaid diagram (`.md` → fenced block) |
 | `export_json_schema(output_path=None)` | Emit the JSON Schema for workflow YAML files |
-| `GraphBuilder(registry, state_class=None)` | Power-user class behind `build_graph()` |
+| `GraphBuilder(registry, state_class=None, *, checkpointer=None, store=None)` | Power-user class behind `build_graph()` |
 | `SQLiteLoader(db_path)` | Save/load versioned definitions; implements the pluggable `Loader` protocol |
 
 ## Documentation
 
 | Document | Contents |
 |---|---|
-| [examples/](https://github.com/pjasielski/langgraph-declarative/blob/main/examples/README.md) | 12 runnable examples, one per feature, organized by milestone |
+| [examples/](https://github.com/pjasielski/langgraph-declarative/blob/main/examples/README.md) | 13 runnable examples, one per feature, organized by milestone |
 | [template/](https://github.com/pjasielski/langgraph-declarative/tree/main/template/) | Starter project for `langgraph dev` using the declarative pattern |
-| [ROADMAP.md](https://github.com/pjasielski/langgraph-declarative/blob/main/ROADMAP.md) | What shipped per milestone, and unvalidated future ideas |
+| [docs/04-plan/ROADMAP.md](https://github.com/pjasielski/langgraph-declarative/blob/main/docs/04-plan/ROADMAP.md) | What shipped per milestone, and unvalidated future ideas |
 | [CHANGELOG.md](https://github.com/pjasielski/langgraph-declarative/blob/main/CHANGELOG.md) | Release history |
 | [DECISIONS.md](https://github.com/pjasielski/langgraph-declarative/blob/main/DECISIONS.md) | Why the API and the scope look the way they do |
 | [docs/02-requirements/REQUIREMENTS.md](https://github.com/pjasielski/langgraph-declarative/blob/main/docs/02-requirements/REQUIREMENTS.md) | Problem, users, success criteria |

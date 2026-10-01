@@ -17,6 +17,9 @@ def build_graph(
     path: str | Path,
     registry: Registry,
     state_class: type | None = None,
+    *,
+    checkpointer=None,
+    store=None,
 ) -> CompiledStateGraph:
     """One-line graph compilation from a YAML file + registry.
 
@@ -25,11 +28,23 @@ def build_graph(
         registry: Registry containing the node/router functions.
         state_class: State annotation for the graph. Defaults to
             ``MessagesState``. Ignored when the YAML declares ``state:``.
+        checkpointer: Persistence backend. Required for human-in-the-loop —
+            ``interrupt()`` pauses a run by persisting state, so without one a
+            pause cannot be resumed and there is no ``thread_id`` scoping.
+            Not supplied by default: under ``langgraph dev`` / LangGraph
+            Platform the server owns the checkpointer and one passed here is
+            silently ignored, so a built-in default would only ever mislead.
+        store: Cross-thread memory backend (optional).
 
     Returns:
         A compiled LangGraph ``CompiledStateGraph`` ready for ``.invoke()``.
     """
-    builder = GraphBuilder(registry=registry, state_class=state_class)
+    builder = GraphBuilder(
+        registry=registry,
+        state_class=state_class,
+        checkpointer=checkpointer,
+        store=store,
+    )
     return builder.build_from_file(path)
 
 

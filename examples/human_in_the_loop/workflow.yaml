@@ -1,0 +1,52 @@
+# Human-in-the-loop: an approval gate in front of a write.
+#
+# The design principle: read-only tools run freely, write tools route to an
+# approval node. The gate is *structural* — `execute` has no inbound edge from
+# anywhere except `approval`, so it is unreachable unless a human resumes the
+# run. That is stronger than telling an LLM "please ask before writing".
+#
+# Requires a checkpointer at build time (see main.py). `interrupt()` pauses by
+# persisting state, so without one the pause could not be resumed.
+
+state:
+  - name: "request"
+    type: "str"
+  - name: "log"
+    type: "list[str]"
+    reducer: "append"
+
+nodes:
+  - name: "agent"
+    function: "agent"
+
+  # Read-only work: no approval needed.
+  - name: "read_file"
+    function: "read_file"
+
+  # The gate. It routes itself with Command(goto=...) after the human answers,
+  # so it has no static outgoing edges — `destinations:` tells LangGraph where
+  # it can go, which keeps the rendered diagram honest.
+  - name: "approval"
+    function: "approval"
+    destinations: ["execute", "END"]
+
+  # The gated side effect.
+  - name: "execute"
+    function: "execute"
+
+edges:
+  - source: "START"
+    target: "agent"
+
+  # Route on the request type: reads go straight through, writes hit the gate.
+  - source: "agent"
+    match: "request"
+    targets:
+      read: "read_file"
+      write: "approval"
+      default: "END"
+
+  - source: "read_file"
+    target: "END"
+  - source: "execute"
+    target: "END"

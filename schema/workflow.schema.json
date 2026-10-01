@@ -211,6 +211,21 @@
           ],
           "default": null,
           "title": "Tools"
+        },
+        "destinations": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Destinations"
         }
       },
       "required": [
@@ -311,6 +326,36 @@
       ],
       "default": null,
       "title": "Imports"
+    },
+    "interrupt_before": {
+      "anyOf": [
+        {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Interrupt Before"
+    },
+    "interrupt_after": {
+      "anyOf": [
+        {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Interrupt After"
     }
   },
   "required": [

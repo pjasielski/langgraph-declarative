@@ -40,6 +40,7 @@ class NodeConfig(BaseModel):
     subgraph: str | None = None
     llm: LLMConfig | None = None
     tools: list[str] | None = None
+    destinations: list[str] | None = None
 
     @model_validator(mode="after")
     def _validate_node_fields(self) -> "NodeConfig":
@@ -128,6 +129,8 @@ class GraphConfig(BaseModel):
     state: list[StateFieldConfig] | None = None
     llm: LLMConfig | None = None
     imports: list[ImportConfig] | None = None
+    interrupt_before: list[str] | None = None
+    interrupt_after: list[str] | None = None
 
     @model_validator(mode="after")
     def _validate_unique_names(self) -> "GraphConfig":
@@ -231,3 +234,26 @@ def cross_validate(config: GraphConfig, registry: "Registry") -> None:  # noqa: 
                     raise ConfigValidationError(
                         format_not_found("node", t, sorted(node_names))
                     )
+
+    # Check Command(goto=...) destinations reference defined nodes or END
+    for node in config.nodes:
+        if not node.destinations:
+            continue
+        for dest in node.destinations:
+            if dest not in valid_names:
+                raise ConfigValidationError(
+                    f"Node '{node.name}' destination: "
+                    + format_not_found("node", dest, sorted(node_names))
+                )
+
+    # Check static interrupt points reference defined nodes.
+    # These are top-level compile() arguments, so a node inside a subgraph file
+    # is not addressable here — validation stays scoped to this file's nodes.
+    for field_name in ("interrupt_before", "interrupt_after"):
+        for name in getattr(config, field_name) or []:
+            if name not in node_names:
+                raise ConfigValidationError(
+                    f"{field_name}: " + format_not_found(
+                        "node", name, sorted(node_names)
+                    )
+                )

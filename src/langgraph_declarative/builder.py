@@ -48,12 +48,32 @@ class GraphBuilder:
         state_class: The state annotation for the graph. Defaults to
             ``MessagesState``. Ignored (with a warning) when the YAML declares
             its own ``state:`` section.
+        checkpointer: Persistence backend enabling ``interrupt()`` / resume and
+            ``thread_id`` scoping. Deliberately not defaulted — see the note below.
+        store: Cross-thread memory backend, passed through to ``compile()``.
+
+    Note:
+        No checkpointer is supplied by default, and that is intentional.
+        Ownership flips by run mode: in your own process (CLI, FastAPI, script)
+        you own it, but under ``langgraph dev`` / LangGraph Platform the *server*
+        owns it and one passed at compile time is silently ignored. Defaulting to
+        an in-memory saver would therefore look like it worked while doing
+        nothing under a deployment. Pass one explicitly when you need HITL.
     """
 
-    def __init__(self, registry: Registry, state_class: type | None = None) -> None:
+    def __init__(
+        self,
+        registry: Registry,
+        state_class: type | None = None,
+        *,
+        checkpointer=None,
+        store=None,
+    ) -> None:
         self.registry = registry
         self._explicit_state = state_class is not None
         self.state_class = state_class or _default_state_class()
+        self.checkpointer = checkpointer
+        self.store = store
 
     # -- public API --
 
@@ -100,7 +120,21 @@ class GraphBuilder:
         graph = StateGraph(self._resolve_state_class(config))
         self._add_nodes(graph, config, base_dir, visiting)
         self._add_edges(graph, config.edges)
-        return graph.compile()
+
+        # Only the top-level compile takes persistence. Nested subgraph compiles
+        # (in _add_nodes) deliberately get none: the parent's checkpointer already
+        # covers interrupts raised inside a subgraph. See ADR-005.
+        compile_kwargs = {}
+        if self.checkpointer is not None:
+            compile_kwargs["checkpointer"] = self.checkpointer
+        if self.store is not None:
+            compile_kwargs["store"] = self.store
+        if config.interrupt_before:
+            compile_kwargs["interrupt_before"] = list(config.interrupt_before)
+        if config.interrupt_after:
+            compile_kwargs["interrupt_after"] = list(config.interrupt_after)
+
+        return graph.compile(**compile_kwargs)
 
     def _resolve_state_class(self, config: GraphConfig) -> type:
         """YAML ``state:`` wins over the constructor's state_class (with warning)."""
@@ -127,12 +161,26 @@ class GraphBuilder:
         """Register all node functions (or compiled subgraphs) on the graph."""
         for node in config.nodes:
             if node.subgraph is not None:
-                compiled = self._build_from_file(base_dir / node.subgraph, visiting)
-                graph.add_node(node.name, compiled)
+                # Subgraphs compile without persistence — the parent owns it.
+                sub_builder = self._subgraph_builder()
+                compiled = sub_builder._build_from_file(
+                    base_dir / node.subgraph, visiting
+                )
+                graph.add_node(node.name, compiled, **_node_kwargs(node))
             else:
                 fn = self.registry.get_node(node.function)
                 fn = self._wire_llm_and_tools(fn, node, config.llm)
-                graph.add_node(node.name, fn)
+                graph.add_node(node.name, fn, **_node_kwargs(node))
+
+    def _subgraph_builder(self) -> "GraphBuilder":
+        """A twin of this builder with persistence stripped (ADR-005)."""
+        if self.checkpointer is None and self.store is None:
+            return self
+        twin = GraphBuilder(
+            self.registry,
+            self.state_class if self._explicit_state else None,
+        )
+        return twin
 
     def _wire_llm_and_tools(
         self, fn: Callable, node: NodeConfig, graph_llm: LLMConfig | None
@@ -247,6 +295,22 @@ class GraphBuilder:
     def _resolve_sentinel(self, name: str) -> str:
         """Map "START"/"END" strings to LangGraph constants, pass others through."""
         return _SENTINELS.get(name, name)
+
+
+def _node_kwargs(node: NodeConfig) -> dict:
+    """Extra ``add_node()`` kwargs derived from the node declaration.
+
+    ``destinations`` tells LangGraph where a node can route itself via
+    ``Command(goto=...)``. Without it such a node has no static outgoing edges,
+    and the rendered diagram invents a wrong ``--> END`` edge. See ADR-006.
+    """
+    if node.destinations is None:
+        return {}
+    return {
+        "destinations": tuple(
+            _SENTINELS.get(d, d) for d in node.destinations
+        )
+    }
 
 
 # -- match routing (module-level: no builder state needed) --

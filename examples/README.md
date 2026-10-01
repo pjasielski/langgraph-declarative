@@ -2,7 +2,7 @@
 
 Runnable examples demonstrating each feature of `langgraph-declarative`. Each example is self-contained — one or more `workflow.yaml` files defining the graph and a `main.py` that registers functions and runs it. The YAML files carry comments explaining the feature they demonstrate.
 
-Examples are grouped by the release that introduced the feature: **v1** (core), **v1.1** (extensions), **v2** (composition & integration).
+Examples are grouped by the release that introduced the feature: **v1** (core), **v1.1** (extensions), **v2** (composition & integration), **v2.1** (human-in-the-loop).
 
 ## Prerequisites
 
@@ -45,6 +45,7 @@ All examples run offline except `llm_and_tools`, which calls a real LLM API (and
 | Cross-file imports (`imports:`) | v2 | [cross_file_imports](#cross_file_imports--shared-node-libraries-v2) |
 | LLM config (`llm:`) + tool binding (`tools:`) | v2 | [llm_and_tools](#llm_and_tools--llm-config-and-tools-in-yaml-v2) |
 | Database-driven definitions (`SQLiteLoader`) | v2 | [db_workflow](#db_workflow--load-definitions-from-sqlite-v2) |
+| Human-in-the-loop (`checkpointer=`, `interrupt()`, `destinations:`) | v2.1 | [human_in_the_loop](#human_in_the_loop--approval-gate-before-a-write-v21) |
 
 v2 also added **LangGraph Template packaging** — that one is not an example but a project scaffold; see [`template/`](../template/) at the repository root.
 
@@ -188,3 +189,17 @@ Stores two versions of a workflow definition in SQLite and builds graphs from bo
 
 - **Files:** [main.py](db_workflow/main.py) (definitions are inline dicts — no YAML file needed)
 - **Demonstrates:** `SQLiteLoader.save()` / `.versions()`, `build_graph_from_db()`, `"source"` vs `"source@version"` pinning
+
+### human_in_the_loop — Approval gate before a write (v2.1)
+
+An agent that reads freely but must get human approval before writing. The gate is **structural**: `execute` is reachable only from `approval`, so it cannot run unless a human resumes the paused graph — stronger than instructing an LLM to ask first. Runs offline (the agent is a deterministic stub).
+
+```
+START → agent → match: request → read_file → END
+                              └→ approval ⏸ → execute → END   (accept)
+                                          └→ END              (reject)
+```
+
+- **Files:** [workflow.yaml](human_in_the_loop/workflow.yaml), [main.py](human_in_the_loop/main.py)
+- **Demonstrates:** `checkpointer=` on `build_graph()`, `interrupt()` / `Command(resume=...)`, `destinations:` on a `Command(goto=...)` node, `thread_id` scoping, and the accept-vs-reject side-effect difference printed at each step
+- **Note:** the checkpointer is supplied by the caller and never defaulted — under `langgraph dev` / LangGraph Platform the server owns persistence and a compile-time checkpointer is ignored
