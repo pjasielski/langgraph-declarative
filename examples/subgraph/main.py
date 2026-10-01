@@ -1,4 +1,4 @@
-"""Subgraph composition (v2): embed one YAML workflow inside another.
+"""Subgraph composition (since 0.2.0): embed one YAML workflow inside another.
 
 workflow.yaml declares the node `research` with `subgraph: "research_subgraph.yaml"`.
 The child file is compiled into its own graph and embedded as a single node.

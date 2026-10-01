@@ -1,5 +1,5 @@
 # The child workflow embedded by workflow.yaml. It declares its own state
-# (v1.1 feature) sharing the "messages" key with the parent, so data flows
+# (since 0.2.0) sharing the "messages" key with the parent, so data flows
 # across the parent/child boundary automatically.
 state:
   - name: "messages"

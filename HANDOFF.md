@@ -1,20 +1,24 @@
 # HANDOFF — langgraph-declarative
 
-**Status:** All milestones shipped — not yet published to PyPI
+**Status:** 0.2.0 on PyPI (tag `v0.2.0`). M05 (HITL) committed on `feat/hitl`, unreleased. Next: M06 → release 0.3.0
 **Phase:** maintenance
-**Updated:** 2026-07-26
+**Updated:** 2026-10-01
 
 ---
 
 ## Current Focus
 
-The library is feature-complete for its planned scope. Milestones v1, v1.1, and v2 are all implemented, tested (167 tests), and packaged as `0.2.0`.
+1. **M06 — Hardening for 0.3.0** (one session). Fixes from an external review, all
+   reproduced in session 013: mapped async/`config` routers, imported-subgraph path
+   resolution and `base_dir=`, strict YAML, `default:` deprecation, `langgraph>=1.0`
+   with a CI matrix, schema in the wheel, durable HITL test, trust-boundary docs,
+   SQLite versioning. Ends with the 0.3.0 release (M05 + M06 together).
+2. **M07 — Capabilities for 0.4.0** (one session): node `params:`, side-effect-free
+   `draw_mermaid()`, `build_from_loader()`, graph lint.
+3. **M08 — platform adapters**: demand-gated; do not start without a consumer.
 
-Remaining work is operational, not feature work:
-
-1. **First PyPI release** — name reserved, `release.yml` wired for Trusted Publishing via OIDC, but nothing has been published and no git release tag exists. See `.sessions/010-main-cleanup/06-pypi-next-steps.md`.
-2. **PyPI-safe README assets** — PyPI strips SVG and cannot resolve relative paths, so the logo needs an absolute PNG URL before release.
-3. **LangChain outreach** — drafted in `.sessions/007-promotion-marketing/02_langchain-outreach.md`.
+Plan and evidence: `.sessions/013-codex-review/02-review-assessment-and-plan.md`.
+Roadmap: `docs/04-plan/ROADMAP.md`.
 
 ## Key Decisions
 
@@ -35,6 +39,11 @@ Remaining work is operational, not feature work:
 | v1 / v1.1 / v2 are milestone labels, not package versions | 2026-06-12 | Confirmed |
 | `requires-python = ">=3.10"` — do not raise the floor | 2026-07-26 | Confirmed |
 | Task files keep `task-NNN.md` names; new tasks use `M{MM}.{NN}` | 2026-07-26 | Confirmed |
+| Checkpointer caller-supplied, never defaulted (ADR-004) | 2026-08-12 | Confirmed |
+| `langgraph>=1.0`, no upper cap (ADR-008) | 2026-10-01 | Confirmed |
+| Unknown YAML keys rejected (ADR-007) | 2026-10-01 | Confirmed |
+| Relative paths resolve against declaring file; `base_dir=` for file-less builds (ADR-009) | 2026-10-01 | Confirmed |
+| Feature tables use package versions; tags only for published releases | 2026-10-01 | Confirmed |
 
 ## Architecture
 
@@ -63,7 +72,7 @@ User Code                          Library (langgraph_declarative)
 | `llm_factory.py` | `llm:` config → provider client, tool binding |
 | `errors.py` | Error types, `difflib` "did you mean?" suggestions |
 
-Stack: Python 3.10+, LangGraph ≥0.2, Pydantic v2, PyYAML, hatchling.
+Stack: Python 3.10+, LangGraph ≥0.2 (→ ≥1.0 in 0.3.0), Pydantic v2, PyYAML, hatchling.
 
 ## Where things are
 
@@ -86,3 +95,6 @@ Stack: Python 3.10+, LangGraph ≥0.2, Pydantic v2, PyYAML, hatchling.
 | 2026-06-12 | Version set to `0.2.0`; CHANGELOG and public roadmap updated |
 | 2026-06-22 | Examples expanded to 12; LangGraph starter template added |
 | 2026-07-26 | Maestro upgraded 0.2 → 0.3 (`delivery/` → `docs/`); README rewritten with logo; repo root cleaned; `feat/v1+` promoted to `main` |
+| 2026-07-26 | 0.2.0 published to PyPI |
+| 2026-08-12 | M05 human-in-the-loop implemented (188 tests); Maestro 0.4.0; single roadmap |
+| 2026-10-01 | External review verified; M06–M08 planned; HITL committed; `v0.2.0` tagged; feature tables switched to package versions |

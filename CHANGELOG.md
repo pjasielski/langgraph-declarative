@@ -1,6 +1,9 @@
 # Changelog
 
-## Unreleased — human-in-the-loop (milestone M05)
+## Unreleased (0.3.0)
+
+Human-in-the-loop (milestone M05). The 0.3.0 release also carries the M06 hardening
+fixes — see [the roadmap](docs/04-plan/ROADMAP.md).
 
 Approval gates, pauses for input, and resumable runs. Previously the library could
 not express these at all: nothing on the call chain reached `graph.compile()`, so

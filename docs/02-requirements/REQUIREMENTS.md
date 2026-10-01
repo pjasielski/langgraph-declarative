@@ -86,22 +86,32 @@ Non-technical stakeholders (PMs, analysts, domain experts) cannot read or modify
 | FR-16 | JSON Schema for YAML files | Nice | v1.1 | Published schema enables IDE autocomplete for workflow YAML |
 | FR-17 | Subgraph composition | Should | v2 | `subgraph: "file.yaml"` in node definition compiles and embeds a sub-graph |
 | FR-18 | Simple value-matching routing | Nice | v2 | `match: "state.field"` + `targets:` for routing without a Python function |
-| FR-19 | Caller-supplied checkpointer | Must | v2.1 | `build_graph(..., checkpointer=saver)` reaches `graph.compile()`; omitting it compiles with `checkpointer=None` (unchanged behaviour) |
-| FR-20 | `destinations:` on node declarations | Should | v2.1 | `destinations: [a, b]` forwards to `add_node(..., destinations=...)` so `Command(goto=...)` nodes render correct Mermaid edges |
-| FR-21 | Static interrupt points in YAML | Should | v2.1 | `interrupt_before: [node]` / `interrupt_after: [node]` at graph level reach `compile()`; names cross-validated against declared nodes |
-| FR-22 | Caller-supplied store | Nice | v2.1 | `build_graph(..., store=store)` reaches `graph.compile()` for cross-thread memory |
+| FR-19 | Caller-supplied checkpointer | Must | 0.3.0 | `build_graph(..., checkpointer=saver)` reaches `graph.compile()`; omitting it compiles with `checkpointer=None` (unchanged behaviour) |
+| FR-20 | `destinations:` on node declarations | Should | 0.3.0 | `destinations: [a, b]` forwards to `add_node(..., destinations=...)` so `Command(goto=...)` nodes render correct Mermaid edges |
+| FR-21 | Static interrupt points in YAML | Should | 0.3.0 | `interrupt_before: [node]` / `interrupt_after: [node]` at graph level reach `compile()`; names cross-validated against declared nodes |
+| FR-22 | Caller-supplied store | Nice | 0.3.0 | `build_graph(..., store=store)` reaches `graph.compile()` for cross-thread memory |
+| FR-23 | Strict YAML validation | Must | 0.3.0 | Unknown keys at any level fail validation with location and suggestion; optional `description:` on graph/node/edge (M06.03) |
+| FR-24 | Mapped routers behave like plain routers | Must | 0.3.0 | Async routers and routers taking `config` work with `targets:` (M06.01) |
+| FR-25 | Origin-relative path resolution | Must | 0.3.0 | Relative `imports:`/`subgraph:` resolve against the declaring file; file-less builds require `base_dir=` (M06.02) |
+| FR-26 | Per-node parameters | Should | 0.4.0 | `params:` delivered to opting-in functions; optional Pydantic validation (M07.01) |
+| FR-27 | Side-effect-free diagrams | Should | 0.4.0 | `draw_mermaid()` constructs no LLM clients or persistence objects (M07.02) |
+| FR-28 | Loader-driven builds | Should | 0.4.0 | `build_from_loader()` is the single pipeline for YAML, SQLite and custom loaders (M07.03) |
+| FR-29 | Structural lint | Should | 0.4.0 | Warnings for unreachable nodes, no path to END, dead routing keys (M07.04) |
+| FR-30 | Node runtime policies | Nice | 0.4.0 | `retry:` / `cache:` / `defer:` map to `add_node()` (M07.06) |
 
 ### 4.2 Non-Functional Requirements
 
 | ID | Category | Requirement | Target |
 |---|---|---|---|
 | NFR-01 | Compatibility | Support Python 3.10+ | Matches LangGraph's minimum version |
-| NFR-02 | Compatibility | Support LangGraph >=0.2 | Compatible with current and recent LangGraph releases |
+| NFR-02 | Compatibility | Support LangGraph >=1.0 (from 0.3.0; 0.2.0 declared >=0.2) | CI tests the lowest and latest resolution of every dependency |
 | NFR-03 | Dependencies | Minimal dependency footprint | Only `langgraph`, `pyyaml`, `pydantic` |
 | NFR-04 | Performance | Zero runtime overhead vs hand-written graphs | Compilation happens once; compiled graph is identical to manual construction |
 | NFR-05 | Packaging | Installable from PyPI | `pip install langgraph-declarative` |
 | NFR-06 | Testing | Comprehensive test coverage | All edge types, validation paths, and error cases covered |
 | NFR-07 | Documentation | README with quickstart and examples | New user can build first graph in <5 minutes |
+| NFR-08 | Security | Trust boundary documented | README states definitions are trusted input (module imports, filesystem reach) and what the host owns for HITL |
+| NFR-09 | Packaging | Installed package matches the docs | JSON Schema and `py.typed` ship in the wheel; CI smoke-tests the installed wheel |
 
 ---
 
@@ -133,7 +143,7 @@ Non-technical stakeholders (PMs, analysts, domain experts) cannot read or modify
 - Expression-based routing / `eval()` (rejected for security)
 - CLI tooling (future idea)
 
-### 5.2.1 In Scope (v2.1 — human-in-the-loop)
+### 5.2.1 In Scope (0.3.0 — human-in-the-loop, milestone M05)
 
 Added after the gap surfaced in real use: the library could not express an approval
 gate, because nothing in the call chain could reach `graph.compile(checkpointer=...)`.
@@ -149,9 +159,23 @@ run mode — under `langgraph dev` / LangGraph Platform the server owns it and a
 compile-time checkpointer is silently ignored, so defaulting to `InMemorySaver`
 would look like it worked while doing nothing. The checkpointer stays opt-in.
 
+### 5.2.2 In Scope (0.3.0 hardening and 0.4.0 capabilities, milestones M06–M07)
+
+From an external review verified in session 013. See FR-23..FR-30, NFR-08..NFR-09
+and the [roadmap](../04-plan/ROADMAP.md).
+
+- 0.3.0: strict YAML, router and path-resolution fixes, `default:` deprecation,
+  `langgraph>=1.0` with a CI matrix, packaged schema, durable HITL test, trust docs
+- 0.4.0: node `params:`, side-effect-free diagrams, `build_from_loader()`, lint,
+  node runtime policies
+
+Explicitly **not** in scope until a consumer exists: a neutral intermediate
+representation, a restricted mode for untrusted definitions, definition digests
+(milestone M08, demand-gated).
+
 ### 5.3 Assumptions
 
-- LangGraph's `StateGraph` API remains stable across 0.2+ releases
+- LangGraph's `StateGraph` API remains stable across 1.x releases
 - Users are familiar with LangGraph concepts (nodes, edges, state)
 - Python node/router functions are co-located with or importable by the code that calls `build_graph()`
 - YAML is the primary config format (JSON/TOML support is future work)
@@ -160,7 +184,7 @@ would look like it worked while doing nothing. The checkpointer stays opt-in.
 
 | # | Dependency | Owner | Risk if Unavailable |
 |---|---|---|---|
-| 1 | LangGraph >=0.2 | LangChain Inc. | Cannot build — core dependency |
+| 1 | LangGraph >=1.0 (from 0.3.0) | LangChain Inc. | Cannot build — core dependency |
 | 2 | Pydantic >=2.0 | Pydantic team | Cannot validate YAML schema |
 | 3 | PyYAML >=6.0 | YAML community | Cannot parse config files |
 

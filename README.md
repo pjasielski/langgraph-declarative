@@ -7,11 +7,8 @@
 [![CI](https://github.com/pjasielski/langgraph-declarative/actions/workflows/ci.yml/badge.svg)](https://github.com/pjasielski/langgraph-declarative/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/badge/python-3.10%2B-6366F1)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-MIT-2DD4BF)](https://github.com/pjasielski/langgraph-declarative/blob/main/LICENSE)
-
-<!-- Uncomment after the first PyPI release:
 [![PyPI](https://img.shields.io/pypi/v/langgraph-declarative?color=2DD4BF)](https://pypi.org/project/langgraph-declarative/)
 [![Downloads](https://img.shields.io/pepy/dt/langgraph-declarative?color=64748B)](https://pypistats.org/packages/langgraph-declarative)
--->
 
 
 
@@ -98,23 +95,23 @@ Three pieces: a **registry** of Python functions, a **definition** of the topolo
 
 | Feature | YAML | Since | Example |
 |---|---|---|---|
-| Simple & parallel edges | `target: "node"` / `target: [a, b]` | v1 | [quickstart](https://github.com/pjasielski/langgraph-declarative/tree/main/examples/quickstart/), [fan_out](https://github.com/pjasielski/langgraph-declarative/tree/main/examples/fan_out/) |
-| Conditional routing | `path:` + `targets:` | v1 | [conditional_routing](https://github.com/pjasielski/langgraph-declarative/tree/main/examples/conditional_routing/) |
-| Dynamic fan-out (`Send`) | `path:` without `targets` | v1 | [dynamic_routing](https://github.com/pjasielski/langgraph-declarative/tree/main/examples/dynamic_routing/) |
-| Custom Python state class | `build_graph(..., state_class=...)` | v1 | [custom_state](https://github.com/pjasielski/langgraph-declarative/tree/main/examples/custom_state/) |
-| State declared in YAML | `state:` with types & reducers | v1.1 | [declared_state](https://github.com/pjasielski/langgraph-declarative/tree/main/examples/declared_state/) |
-| Match routing (no router fn) | `match:` + `targets:` | v1.1 | [match_routing](https://github.com/pjasielski/langgraph-declarative/tree/main/examples/match_routing/) |
-| Mermaid diagrams | `draw_mermaid()` | v1.1 | [visualization](https://github.com/pjasielski/langgraph-declarative/tree/main/examples/visualization/) |
-| IDE autocomplete & validation | [`workflow.schema.json`](https://github.com/pjasielski/langgraph-declarative/blob/main/schema/workflow.schema.json) | v1.1 | [visualization](https://github.com/pjasielski/langgraph-declarative/tree/main/examples/visualization/) |
-| Subgraph composition | `subgraph: "child.yaml"` | v2 | [subgraph](https://github.com/pjasielski/langgraph-declarative/tree/main/examples/subgraph/) |
-| Cross-file node imports | `imports:` | v2 | [cross_file_imports](https://github.com/pjasielski/langgraph-declarative/tree/main/examples/cross_file_imports/) |
-| LLM config & tool binding | `llm:` + `tools:` | v2 | [llm_and_tools](https://github.com/pjasielski/langgraph-declarative/tree/main/examples/llm_and_tools/) |
-| Database-stored workflows | `SQLiteLoader`, `build_graph_from_db()` | v2 | [db_workflow](https://github.com/pjasielski/langgraph-declarative/tree/main/examples/db_workflow/) |
-| LangGraph project template | — | v2 | [template/](https://github.com/pjasielski/langgraph-declarative/tree/main/template/) |
-| Human-in-the-loop | `build_graph(..., checkpointer=...)`, `destinations:`, `interrupt_before:` | v2.1 | [human_in_the_loop](https://github.com/pjasielski/langgraph-declarative/tree/main/examples/human_in_the_loop/) |
+| Simple & parallel edges | `target: "node"` / `target: [a, b]` | 0.1.0 | [quickstart](https://github.com/pjasielski/langgraph-declarative/tree/main/examples/quickstart/), [fan_out](https://github.com/pjasielski/langgraph-declarative/tree/main/examples/fan_out/) |
+| Conditional routing | `path:` + `targets:` | 0.1.0 | [conditional_routing](https://github.com/pjasielski/langgraph-declarative/tree/main/examples/conditional_routing/) |
+| Dynamic fan-out (`Send`) | `path:` without `targets` | 0.1.0 | [dynamic_routing](https://github.com/pjasielski/langgraph-declarative/tree/main/examples/dynamic_routing/) |
+| Custom Python state class | `build_graph(..., state_class=...)` | 0.1.0 | [custom_state](https://github.com/pjasielski/langgraph-declarative/tree/main/examples/custom_state/) |
+| State declared in YAML | `state:` with types & reducers | 0.2.0 | [declared_state](https://github.com/pjasielski/langgraph-declarative/tree/main/examples/declared_state/) |
+| Match routing (no router fn) | `match:` + `targets:` | 0.2.0 | [match_routing](https://github.com/pjasielski/langgraph-declarative/tree/main/examples/match_routing/) |
+| Mermaid diagrams | `draw_mermaid()` | 0.2.0 | [visualization](https://github.com/pjasielski/langgraph-declarative/tree/main/examples/visualization/) |
+| IDE autocomplete & validation | [`workflow.schema.json`](https://github.com/pjasielski/langgraph-declarative/blob/main/schema/workflow.schema.json) | 0.2.0 | [visualization](https://github.com/pjasielski/langgraph-declarative/tree/main/examples/visualization/) |
+| Subgraph composition | `subgraph: "child.yaml"` | 0.2.0 | [subgraph](https://github.com/pjasielski/langgraph-declarative/tree/main/examples/subgraph/) |
+| Cross-file node imports | `imports:` | 0.2.0 | [cross_file_imports](https://github.com/pjasielski/langgraph-declarative/tree/main/examples/cross_file_imports/) |
+| LLM config & tool binding | `llm:` + `tools:` | 0.2.0 | [llm_and_tools](https://github.com/pjasielski/langgraph-declarative/tree/main/examples/llm_and_tools/) |
+| Database-stored workflows | `SQLiteLoader`, `build_graph_from_db()` | 0.2.0 | [db_workflow](https://github.com/pjasielski/langgraph-declarative/tree/main/examples/db_workflow/) |
+| LangGraph project template | — | 0.2.0 | [template/](https://github.com/pjasielski/langgraph-declarative/tree/main/template/) |
+| Human-in-the-loop | `build_graph(..., checkpointer=...)`, `destinations:`, `interrupt_before:` | 0.3.0 | [human_in_the_loop](https://github.com/pjasielski/langgraph-declarative/tree/main/examples/human_in_the_loop/) |
 
 > [!NOTE]
-> v1 / v1.1 / v2 are milestone labels, not package versions. All three have shipped — see [CHANGELOG.md](https://github.com/pjasielski/langgraph-declarative/blob/main/CHANGELOG.md) for releases.
+> **Since** is the package version that introduced the feature. 0.2.0 was the first public release; 0.3.0 is unreleased — see [CHANGELOG.md](https://github.com/pjasielski/langgraph-declarative/blob/main/CHANGELOG.md).
 
 ## YAML reference
 

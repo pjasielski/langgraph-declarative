@@ -1,4 +1,4 @@
-"""Cross-file imports (v2): share node declarations between workflows.
+"""Cross-file imports (since 0.2.0): share node declarations between workflows.
 
 workflow.yaml imports the `error_handler` node from shared_nodes.yaml.
 Imports merge node *declarations* only — the underlying function

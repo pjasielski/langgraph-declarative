@@ -1,8 +1,8 @@
 # ROADMAP — langgraph-declarative
 
-**Version:** 0.2.0 (released) → 0.3.0 (M05 target)
-**Updated:** 2026-08-12
-**Sources:** `.sessions/11-hitl/` (HITL handoff from the agentic-testing project), docs/06-review/, prior delivery sessions
+**Version:** 0.2.0 (released, tag `v0.2.0`) → 0.3.0 (M05 + M06) → 0.4.0 (M07)
+**Updated:** 2026-10-01
+**Sources:** `.sessions/11-hitl/` (HITL handoff from the agentic-testing project), `.sessions/013-codex-review/` (external review, verified), docs/06-review/, prior delivery sessions
 
 The single delivery roadmap for this project. Milestone status, item detail, and the
 task index all live here.
@@ -29,10 +29,98 @@ task index all live here.
 | M02 | Examples & hardening | Edge-type example coverage, public roadmap, edge-case tests | 0.1.0 | ✅ done |
 | M03 | Declarative surface | State in YAML, match routing, Mermaid, JSON Schema | 0.2.0 | ✅ done |
 | M04 | Composition & config | Subgraphs, imports, LLM/tools, DB source, template | 0.2.0 | ✅ done |
-| M05 | Human-in-the-loop | Checkpointer, destinations, static interrupts, store | 0.3.0 | ✅ done |
+| M05 | Human-in-the-loop | Checkpointer, destinations, static interrupts, store | 0.3.0 | ✅ done (unreleased) |
+| M06 | Hardening for 0.3.0 | Correctness fixes, strict schema, compatibility band, packaging, release | 0.3.0 | ☐ todo |
+| M07 | Capabilities | Node params, side-effect-free diagrams, loader pipeline, graph lint | 0.4.0 | ☐ todo |
+| M08 | Embedding & platform adapters | Neutral IR, restricted mode, digests — **demand-gated** | — | ⏳ gated |
 
-M01–M04 shipped as `v0.2.0`. The v1 / v1.1 / v2 labels used in earlier docs were
+M01–M04 shipped as `v0.2.0`. M05 is merged but unreleased: 0.3.0 ships M05 and M06
+together, so the HITL feature does not land on top of known correctness bugs and an
+untested dependency range. The v1 / v1.1 / v2 labels used in earlier docs were
 milestone names, not package versions — see [CHANGELOG.md](../../CHANGELOG.md).
+
+---
+
+## Milestone M06: Hardening for 0.3.0
+
+Fix what an external review found (verified and reproduced in session 013) before
+anything else is released. Every P1 bug here was reproduced. Each fix lands with its
+reproduction as a regression test.
+
+**Estimate:** 1 session.
+
+| # | Item | Scope | Priority | Effort | Depends | Status | Task |
+|---|------|-------|----------|--------|---------|--------|------|
+| M06.01 | **Mapped routers: preserve sync/async and `config` injection** | Bug | P1 | S | — | ☐ todo | [M06.01](tasks/M06.01-router-wrapper-async-config.md) |
+| M06.02 | **Definition origin: imported subgraphs resolve against their own file; explicit `base_dir=`** | Bug | P1 | M | — | ☐ todo | [M06.02](tasks/M06.02-definition-origin.md) |
+| M06.03 | **Strict schema: reject unknown YAML keys; add explicit `description:`** | Bug (breaking) | P1 | S | — | ☐ todo | [M06.03](tasks/M06.03-strict-schema.md) |
+| M06.04 | **State `default:` — deprecate, document as introspection-only** | Bug | P1 | S | — | ☐ todo | [M06.04](tasks/M06.04-state-default-deprecation.md) |
+| M06.05 | **LangGraph `>=1.0` + CI version matrix** | Release | P1 | M | — | ☐ todo | [M06.05](tasks/M06.05-langgraph-compat-band.md) |
+| M06.06 | **Ship JSON Schema in the wheel, add `py.typed`, installed-wheel smoke test** | Release | P1 | S | M06.03 | ☐ todo | [M06.06](tasks/M06.06-packaging.md) |
+| M06.07 | **HITL durable-restart test with a persistent saver** | HITL | P1 | S | — | ☐ todo | [M06.07](tasks/M06.07-hitl-durable-restart-test.md) |
+| M06.08 | **Docs: trust boundary + host responsibilities for HITL** | Docs | P1 | S | — | ☐ todo | [M06.08](tasks/M06.08-trust-boundary-docs.md) |
+| M06.09 | **SQLite loader: atomic version allocation** | Bug | P2 | S | — | ☐ todo | [M06.09](tasks/M06.09-sqlite-atomic-versioning.md) |
+| M06.10 | **Release 0.3.0: version bump, CHANGELOG, tag, GitHub release** | Release | P1 | S | all | ☐ todo | [M06.10](tasks/M06.10-release-0.3.0.md) |
+
+**Done when:** every P1 item is green; CI passes on the full matrix; an installed
+wheel contains the schema; `v0.3.0` is tagged and on PyPI.
+
+### Execution notes
+
+**Order:** M06.01–M06.05, M06.07–M06.09 are independent → M06.06 → M06.10.
+**Critical path:** M06.03 → M06.06 → M06.10.
+
+**Breaking changes (allowed in 0.x, listed in CHANGELOG):**
+- Unknown YAML keys now fail validation (M06.03).
+- A DB/in-memory definition with relative `imports:`/`subgraph:` and no `base_dir=`
+  now raises instead of resolving against the process working directory (M06.02).
+- `langgraph>=1.0` instead of `>=0.2` (M06.05).
+
+---
+
+## Milestone M07: Capabilities (0.4.0)
+
+Features users need for reusable node types and safer tooling. All additive.
+
+**Estimate:** 1 session.
+
+| # | Item | Scope | Priority | Effort | Depends | Status | Task |
+|---|------|-------|----------|--------|---------|--------|------|
+| M07.01 | **Node `params:` with optional Pydantic validation** | Capability | P2 | M | M06.03 | ☐ todo | [M07.01](tasks/M07.01-node-params.md) |
+| M07.02 | **Side-effect-free `draw_mermaid()`: no LLM clients, no persistence** | Capability | P2 | M | — | ☐ todo | [M07.02](tasks/M07.02-structural-render.md) |
+| M07.03 | **`build_from_loader()`: one pipeline for YAML, SQLite and custom loaders** | Capability | P2 | S | M06.02 | ☐ todo | [M07.03](tasks/M07.03-build-from-loader.md) |
+| M07.04 | **Graph lint: unreachable nodes, no path to END, dead routing keys** | Capability | P2 | M | — | ☐ todo | [M07.04](tasks/M07.04-graph-lint.md) |
+| M07.05 | **HITL resume semantics tests: stale, double and post-reject resume** | HITL | P2 | S | M06.07 | ☐ todo | [M07.05](tasks/M07.05-hitl-resume-semantics.md) |
+| M07.06 | **Node `retry:` / `cache:` / `defer:`** | Capability | P3 | S | M06.05 | ☐ todo | [M07.06](tasks/M07.06-node-runtime-policies.md) |
+| M07.07 | **LLM parameter validation in the schema** | Capability | P3 | S | M06.03 | ☐ todo | [M07.07](tasks/M07.07-llm-param-validation.md) |
+| M07.08 | **Optional runtime guard for `destinations`** | HITL | P3 | S | — | ☐ todo | [M07.08](tasks/M07.08-destinations-runtime-guard.md) |
+
+**Done when:** each item has a runnable example or test, the JSON Schema is
+regenerated, and `v0.4.0` is released.
+
+### Execution notes
+
+**Order:** M07.01, M07.02, M07.04, M07.05, M07.07, M07.08 are independent;
+M07.03 follows M06.02; M07.06 follows M06.05. P3 items are droppable.
+
+---
+
+## Milestone M08: Embedding & platform adapters (demand-gated)
+
+Work that only pays off when a second compile target exists — e.g. emitting another
+platform's workflow format instead of a LangGraph graph. **Do not start without a
+confirmed consumer.** The first candidate is an external workflow platform; details
+stay in `.sessions/013-codex-review/` (not public).
+
+| # | Item | Scope | Effort | Status |
+|---|------|-------|--------|--------|
+| M08.01 | Neutral intermediate representation: a resolved, origin-annotated definition independent of LangGraph; the LangGraph compiler becomes one target | Architecture | L | ⏳ gated |
+| M08.02 | Restricted mode: no `module:attr` imports, root-confined path resolver, registry allowlist, size/depth/count limits | Architecture | M | ⏳ gated |
+| M08.03 | Canonical serialization + definition digest; loader provenance | Architecture | M | ⏳ gated |
+| M08.04 | Property/fuzz tests: recursive imports, routing, malformed configs | Architecture | M | ⏳ gated |
+
+Recommended first step if demand is confirmed: a proof-of-concept adapter as a
+**separate package** consuming the strict `GraphConfig`, not changes to the core.
 
 ---
 
@@ -136,13 +224,13 @@ is the previous behaviour, and the new YAML fields are all optional.
 
 | # | Item | Priority | Effort | Depends | Status | Source |
 |---|------|----------|--------|---------|--------|--------|
-| OPS.1 | **First PyPI release** — name reserved, `release.yml` wired for Trusted Publishing, nothing published yet | P1 | S | — | ☐ todo | delivery |
+| OPS.1 | **First PyPI release** — `0.2.0` published 2026-07-26; tagged `v0.2.0` retroactively on 2026-10-01 (source verified identical to the PyPI wheel) | P1 | S | — | ✅ done | delivery |
 | OPS.2 | **README logo asset for PyPI** — PyPI strips SVG and can't resolve relative paths | P2 | S | — | ✅ done | session 010 |
 | OPS.3 | **LangChain outreach** — see `.sessions/007-promotion-marketing/02_langchain-outreach.md` | P3 | S | — | ☐ todo | session 007 |
 
 ---
 
-## Future (post 0.3.0)
+## Future (unscheduled)
 
 Possibilities, not commitments. Each needs validation against real usage before it
 earns a milestone.
@@ -163,12 +251,14 @@ YAML include/import shipped as task-023 (`imports:`) and is no longer a future i
 
 | Risk | Mitigation |
 |------|------------|
-| LangGraph API differences across versions | Minimum version pinned in `pyproject.toml`; CI tests against it |
+| LangGraph API differences across versions | `langgraph>=1.0` from 0.3.0; CI tests the lowest and latest resolution (M06.05). Until then CI tests only the lockfile |
 | Pydantic v2 validator edge cases | Validators kept simple; invalid configs tested thoroughly |
 | Subgraph state scoping complexity | Shared registry + state sharing via common keys only |
 | LLM provider dependency sprawl | Providers are optional extras with lazy imports and a clear error when missing |
 | DB loader schema migrations | Graph config stored as JSON text with a version field, not normalized tables |
 | Test fixtures drift from the YAML spec | YAML fixtures in `tests/fixtures/` are the spec; tests validate against them |
+| Untrusted YAML selects code and reads files | Definitions are trusted input — documented (M06.08); a restricted mode is M08.02 |
+| Package docs drift from what ships | Installed-wheel smoke test (M06.06); release checklist (M06.10) |
 | HITL checkpointer ignored under `langgraph dev` | Never default one; ownership split documented in README and the example |
 | `interrupt()` semantics shifting across LangGraph versions | Behavioural tests assert side effects, so a semantic change fails loudly |
 

@@ -1,4 +1,4 @@
-"""Declared state (v1.1): define state fields, types, and reducers in YAML.
+"""Declared state (since 0.2.0): define state fields, types, and reducers in YAML.
 
 Compare with examples/custom_state, which builds the same kind of pipeline
 with a hand-written Python TypedDict passed as `state_class=`. Here the YAML

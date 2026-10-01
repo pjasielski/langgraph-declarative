@@ -1,5 +1,5 @@
 # A library of reusable node declarations. Files like this need no edges —
-# they exist to be imported by other workflows (v2 cross-file imports).
+# they exist to be imported by other workflows (cross-file imports, since 0.2.0).
 # The node *declarations* live here; the *functions* still come from the
 # registry of whichever workflow imports them.
 nodes:

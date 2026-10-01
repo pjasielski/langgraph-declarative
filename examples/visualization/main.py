@@ -1,4 +1,4 @@
-"""Visualization & IDE support (v1.1): Mermaid diagrams and JSON Schema export.
+"""Visualization & IDE support (since 0.2.0): Mermaid diagrams and JSON Schema export.
 
 Two developer-experience features:
 

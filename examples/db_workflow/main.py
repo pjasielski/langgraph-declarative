@@ -1,4 +1,4 @@
-"""Database-driven workflows (v2): load graph definitions from SQLite.
+"""Database-driven workflows (since 0.2.0): load graph definitions from SQLite.
 
 SQLiteLoader stores workflow definitions (as YAML/JSON text) with per-source
 version tracking — workflows can be created and updated at runtime without
