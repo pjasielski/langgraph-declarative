@@ -2,7 +2,7 @@
 
 Runnable examples demonstrating each feature of `langgraph-declarative`. Each example is self-contained — one or more `workflow.yaml` files defining the graph and a `main.py` that registers functions and runs it. The YAML files carry comments explaining the feature they demonstrate.
 
-Each example is labelled with the package version that introduced its feature: **0.1.0** (core), **0.2.0** (state, routing, diagrams, composition & integration — the first public release), **0.3.0** (human-in-the-loop, unreleased).
+Each example is labelled with the package version that introduced its feature: **0.1.0** (core), **0.2.0** (state, routing, diagrams, composition & integration — the first public release), **0.3.0** (human-in-the-loop).
 
 ## Prerequisites
 

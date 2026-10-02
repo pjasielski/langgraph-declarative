@@ -129,7 +129,7 @@ Three pieces: a **registry** of Python functions, a **definition** of the topolo
 | Human-in-the-loop | `build_graph(..., checkpointer=...)`, `destinations:`, `interrupt_before:` | 0.3.0 | [human_in_the_loop](https://github.com/pjasielski/langgraph-declarative/tree/main/examples/human_in_the_loop/) |
 
 > [!NOTE]
-> **Since** is the package version that introduced the feature. 0.2.0 was the first public release; 0.3.0 is unreleased — see [CHANGELOG.md](https://github.com/pjasielski/langgraph-declarative/blob/main/CHANGELOG.md).
+> **Since** is the package version that introduced the feature. 0.2.0 was the first public release; 0.1.0 was internal. See [CHANGELOG.md](https://github.com/pjasielski/langgraph-declarative/blob/main/CHANGELOG.md).
 
 ## YAML reference
 

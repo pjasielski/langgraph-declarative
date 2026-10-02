@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased (0.3.0)
+## v0.3.0 (2026-10-02)
 
 Human-in-the-loop (milestone M05) and hardening (milestone M06) — see
 [the roadmap](docs/04-plan/ROADMAP.md).
