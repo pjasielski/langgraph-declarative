@@ -39,3 +39,37 @@ jobs:
       - name: Run tests (latest)
         if: matrix.deps == 'latest'
         run: uv run --isolated --upgrade --extra dev pytest
+
+  package:
+    # Tests the wheel users install, not the source tree: catches files that
+    # exist in the repo but are missing from the distribution.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Build sdist and wheel
+        run: uv build
+
+      - name: Install the wheel into a clean venv
+        run: |
+          uv venv /tmp/smoke --python 3.12
+          uv pip install --python /tmp/smoke/bin/python dist/*.whl
+
+      - name: Import, read the packaged schema, run the quickstart
+        # Run from /tmp so the repo's src/ cannot shadow the installed package.
+        working-directory: /tmp
+        run: |
+          /tmp/smoke/bin/python - <<'PY'
+          import json
+          from importlib import resources
+          import langgraph_declarative as ld
+          pkg = resources.files("langgraph_declarative")
+          schema = json.loads((pkg / "workflow.schema.json").read_text())
+          assert schema == ld.export_json_schema(), "packaged schema drifted"
+          assert (pkg / "py.typed").is_file(), "py.typed missing"
+          assert "site-packages" in ld.__file__, ld.__file__
+          PY
+          /tmp/smoke/bin/python "$GITHUB_WORKSPACE/examples/quickstart/main.py"

@@ -182,7 +182,7 @@ edges:
 > ```yaml
 > # yaml-language-server: $schema=path/to/workflow.schema.json
 > ```
-> The schema ships at [`schema/workflow.schema.json`](https://github.com/pjasielski/langgraph-declarative/blob/main/schema/workflow.schema.json), or regenerate it with `export_json_schema()`.
+> Point it at [`schema/workflow.schema.json`](https://github.com/pjasielski/langgraph-declarative/blob/main/schema/workflow.schema.json) in the repo, or write a local copy with `export_json_schema("workflow.schema.json")`. From 0.3.0 the installed package also ships it as `langgraph_declarative/workflow.schema.json` — locate it with `importlib.resources.files("langgraph_declarative") / "workflow.schema.json"`.
 
 ## Human-in-the-loop
 

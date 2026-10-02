@@ -57,6 +57,11 @@ changes, listed first — each turns a silent misbehaviour into an explicit erro
 
 ### Added
 
+- **JSON Schema inside the package** — `langgraph_declarative/workflow.schema.json`,
+  readable with `importlib.resources`. 0.2.0 documented the schema but shipped it
+  only in the sdist and the repo, not in the installed wheel.
+- **`py.typed`** — type checkers now use the package's annotations.
+
 - **`description:`** — optional free text on the graph, nodes and edges. It is the
   one documentation key that strict validation allows.
 

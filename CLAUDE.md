@@ -19,7 +19,7 @@ Always save substantive responses to a file in the session folder unless the res
 
 - Source lives in `src/langgraph_declarative/`; tests in `tests/` with YAML fixtures in `tests/fixtures/`
 - Every user-facing feature has a runnable example in `examples/` — add one when adding a feature
-- `tests/fixtures/*.yaml` are the de facto spec for the YAML schema; update them and `schema/workflow.schema.json` together
+- `tests/fixtures/*.yaml` are the de facto spec for the YAML schema; update them together with `schema/workflow.schema.json` and its packaged copy `src/langgraph_declarative/workflow.schema.json` (tests enforce all three match `export_json_schema()`)
 - Run tests with `uv run pytest`
 - Milestone labels (v1 / v1.1 / v2, M01–M08) are not package versions. User-facing docs cite package versions (0.1.0 / 0.2.0 / 0.3.0); tags `vX.Y.Z` only for published releases
 

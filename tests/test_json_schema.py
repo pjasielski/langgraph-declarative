@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from importlib import resources
 from pathlib import Path
 
 import jsonschema
@@ -72,3 +73,13 @@ class TestExportJsonSchema:
         assert artifact.exists(), "run export_json_schema('schema/workflow.schema.json')"
         committed = json.loads(artifact.read_text(encoding="utf-8"))
         assert committed == export_json_schema()
+
+    def test_packaged_copy_matches_repo_copy(self):
+        """M06.06: the schema ships inside the package, identical to schema/."""
+        packaged = resources.files("langgraph_declarative") / "workflow.schema.json"
+        repo = REPO_ROOT / "schema" / "workflow.schema.json"
+        assert packaged.read_text(encoding="utf-8") == repo.read_text(encoding="utf-8")
+        assert json.loads(packaged.read_text(encoding="utf-8")) == export_json_schema()
+
+    def test_py_typed_marker_present(self):
+        assert (resources.files("langgraph_declarative") / "py.typed").is_file()
