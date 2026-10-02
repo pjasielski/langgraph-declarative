@@ -7,8 +7,9 @@ from pathlib import Path
 import pytest
 from langgraph.graph.state import CompiledStateGraph
 
-from langgraph_declarative import Registry, build_graph
+from langgraph_declarative import GraphBuilder, Registry, build_graph
 from langgraph_declarative.errors import ConfigValidationError
+from langgraph_declarative.schema import validate_config
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
@@ -126,3 +127,85 @@ class TestImportErrors:
         )
         with pytest.raises(ConfigValidationError, match="'ghost_node' not found"):
             build_graph(tmp_path / "main.yaml", _registry())
+
+
+def _subgraph_registry() -> Registry:
+    reg = _registry()
+
+    @reg.node("child_step_fn")
+    def child_step_fn(state):
+        return {"messages": [{"role": "assistant", "content": "child"}]}
+
+    return reg
+
+
+class TestDefinitionOrigin:
+    """M06.02: relative paths resolve against the file that declares them."""
+
+    def _write_library(self, root: Path) -> None:
+        """lib/nodes.yaml declares a subgraph node relative to lib/."""
+        (root / "lib" / "sub").mkdir(parents=True)
+        (root / "lib" / "sub" / "child.yaml").write_text(
+            (FIXTURES / "subgraph_child.yaml").read_text()
+        )
+        (root / "lib" / "nodes.yaml").write_text(
+            "nodes:\n  - name: child\n    subgraph: sub/child.yaml\n"
+        )
+
+    def test_imported_subgraph_resolves_against_its_own_file(self, tmp_path):
+        self._write_library(tmp_path)
+        (tmp_path / "main.yaml").write_text(
+            "imports:\n  - file: lib/nodes.yaml\n"
+            "nodes:\n  - name: step\n    function: process\n"
+            "edges:\n"
+            "  - {source: START, target: step}\n"
+            "  - {source: step, target: child}\n"
+            "  - {source: child, target: END}\n"
+        )
+        graph = build_graph(tmp_path / "main.yaml", _subgraph_registry())
+        result = graph.invoke({"messages": []})
+        assert [m.content for m in result["messages"]] == ["processed", "child"]
+
+    def test_in_memory_relative_import_requires_base_dir(self, tmp_path):
+        self._write_library(tmp_path)
+        config = validate_config({
+            "imports": [{"file": "lib/nodes.yaml"}],
+            "nodes": [{"name": "step", "function": "process"}],
+            "edges": [{"source": "START", "target": "step"}],
+        })
+        with pytest.raises(ConfigValidationError, match="base_dir"):
+            GraphBuilder(_subgraph_registry()).build(config)
+
+        graph = GraphBuilder(_subgraph_registry()).build(config, base_dir=tmp_path)
+        assert "child" in graph.nodes
+
+    def test_in_memory_relative_subgraph_requires_base_dir(self):
+        config = validate_config({
+            "nodes": [{"name": "child", "subgraph": "subgraph_child.yaml"}],
+            "edges": [{"source": "START", "target": "child"}],
+        })
+        with pytest.raises(ConfigValidationError, match="base_dir"):
+            GraphBuilder(_subgraph_registry()).build(config)
+
+        graph = GraphBuilder(_subgraph_registry()).build(config, base_dir=FIXTURES)
+        assert "child" in graph.nodes
+
+    def test_absolute_paths_need_no_base_dir(self):
+        config = validate_config({
+            "nodes": [{
+                "name": "child",
+                "subgraph": str((FIXTURES / "subgraph_child.yaml").resolve()),
+            }],
+            "edges": [{"source": "START", "target": "child"}],
+        })
+        graph = GraphBuilder(_subgraph_registry()).build(config)
+        assert "child" in graph.nodes
+
+    def test_build_does_not_use_working_directory(self, monkeypatch):
+        monkeypatch.chdir(FIXTURES)
+        config = validate_config({
+            "nodes": [{"name": "child", "subgraph": "subgraph_child.yaml"}],
+            "edges": [{"source": "START", "target": "child"}],
+        })
+        with pytest.raises(ConfigValidationError, match="base_dir"):
+            GraphBuilder(_subgraph_registry()).build(config)

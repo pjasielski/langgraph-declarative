@@ -48,25 +48,61 @@ class GraphBuilder:
         state_class: The state annotation for the graph. Defaults to
             ``MessagesState``. Ignored (with a warning) when the YAML declares
             its own ``state:`` section.
+        checkpointer: Persistence backend enabling ``interrupt()`` / resume and
+            ``thread_id`` scoping. Deliberately not defaulted — see the note below.
+        store: Cross-thread memory backend, passed through to ``compile()``.
+
+    Note:
+        No checkpointer is supplied by default, and that is intentional.
+        Ownership flips by run mode: in your own process (CLI, FastAPI, script)
+        you own it, but under ``langgraph dev`` / LangGraph Platform the *server*
+        owns it and one passed at compile time is silently ignored. Defaulting to
+        an in-memory saver would therefore look like it worked while doing
+        nothing under a deployment. Pass one explicitly when you need HITL.
     """
 
-    def __init__(self, registry: Registry, state_class: type | None = None) -> None:
+    def __init__(
+        self,
+        registry: Registry,
+        state_class: type | None = None,
+        *,
+        checkpointer=None,
+        store=None,
+    ) -> None:
         self.registry = registry
         self._explicit_state = state_class is not None
         self.state_class = state_class or _default_state_class()
+        self.checkpointer = checkpointer
+        self.store = store
 
     # -- public API --
 
-    def build(self, config: GraphConfig) -> CompiledStateGraph:
-        """Build and compile a StateGraph from a validated config."""
-        return self._build(config, base_dir=Path.cwd(), visiting=())
+    def build(
+        self, config: GraphConfig, *, base_dir: str | Path | None = None
+    ) -> CompiledStateGraph:
+        """Build and compile a StateGraph from a validated config.
+
+        Args:
+            config: A validated graph configuration.
+            base_dir: Directory that relative ``imports:`` / ``subgraph:`` paths
+                resolve against. An in-memory config has no file of its own, so
+                a relative path without ``base_dir`` raises
+                ``ConfigValidationError`` instead of silently depending on the
+                process working directory (ADR-009).
+        """
+        resolved = Path(base_dir).resolve() if base_dir is not None else None
+        return self._build(config, base_dir=resolved, visiting=())
 
     def build_from_file(self, path: str | Path) -> CompiledStateGraph:
         """Load YAML, validate, cross-validate, and build. Full pipeline."""
         return self._build_from_file(Path(path), visiting=())
 
     def draw_mermaid(
-        self, config: GraphConfig, output_path: str | Path | None = None
+        self,
+        config: GraphConfig,
+        output_path: str | Path | None = None,
+        *,
+        base_dir: str | Path | None = None,
     ) -> str:
         """Compile the config and return its Mermaid diagram source.
 
@@ -74,8 +110,9 @@ class GraphBuilder:
             config: A validated graph configuration.
             output_path: If given, also write the diagram to this file
                 (``.md`` gets a fenced code block, anything else raw Mermaid).
+            base_dir: Directory for relative paths — see :meth:`build`.
         """
-        compiled = self.build(config)
+        compiled = self.build(config, base_dir=base_dir)
         return _render_mermaid(compiled, output_path)
 
     # -- pipeline internals --
@@ -92,15 +129,32 @@ class GraphBuilder:
         return self._build(config, resolved.parent, (*visiting, resolved))
 
     def _build(
-        self, config: GraphConfig, base_dir: Path, visiting: tuple[Path, ...]
+        self,
+        config: GraphConfig,
+        base_dir: Path | None,
+        visiting: tuple[Path, ...],
     ) -> CompiledStateGraph:
-        config = _resolve_imports(config, base_dir)
+        config, origins = _resolve_imports(config, base_dir)
         cross_validate(config, self.registry)
 
         graph = StateGraph(self._resolve_state_class(config))
-        self._add_nodes(graph, config, base_dir, visiting)
+        self._add_nodes(graph, config, origins, visiting)
         self._add_edges(graph, config.edges)
-        return graph.compile()
+
+        # Only the top-level compile takes persistence. Nested subgraph compiles
+        # (in _add_nodes) deliberately get none: the parent's checkpointer already
+        # covers interrupts raised inside a subgraph. See ADR-005.
+        compile_kwargs = {}
+        if self.checkpointer is not None:
+            compile_kwargs["checkpointer"] = self.checkpointer
+        if self.store is not None:
+            compile_kwargs["store"] = self.store
+        if config.interrupt_before:
+            compile_kwargs["interrupt_before"] = list(config.interrupt_before)
+        if config.interrupt_after:
+            compile_kwargs["interrupt_after"] = list(config.interrupt_after)
+
+        return graph.compile(**compile_kwargs)
 
     def _resolve_state_class(self, config: GraphConfig) -> type:
         """YAML ``state:`` wins over the constructor's state_class (with warning)."""
@@ -121,18 +175,38 @@ class GraphBuilder:
         self,
         graph: StateGraph,
         config: GraphConfig,
-        base_dir: Path,
+        origins: dict[str, Path | None],
         visiting: tuple[Path, ...],
     ) -> None:
-        """Register all node functions (or compiled subgraphs) on the graph."""
+        """Register all node functions (or compiled subgraphs) on the graph.
+
+        *origins* maps each node to the directory of the file that declared it,
+        so an imported node's ``subgraph:`` resolves next to its own file.
+        """
         for node in config.nodes:
             if node.subgraph is not None:
-                compiled = self._build_from_file(base_dir / node.subgraph, visiting)
-                graph.add_node(node.name, compiled)
+                # Subgraphs compile without persistence — the parent owns it.
+                sub_builder = self._subgraph_builder()
+                path = _resolve_relative(
+                    node.subgraph, origins[node.name],
+                    f"Node '{node.name}' subgraph",
+                )
+                compiled = sub_builder._build_from_file(path, visiting)
+                graph.add_node(node.name, compiled, **_node_kwargs(node))
             else:
                 fn = self.registry.get_node(node.function)
                 fn = self._wire_llm_and_tools(fn, node, config.llm)
-                graph.add_node(node.name, fn)
+                graph.add_node(node.name, fn, **_node_kwargs(node))
+
+    def _subgraph_builder(self) -> "GraphBuilder":
+        """A twin of this builder with persistence stripped (ADR-005)."""
+        if self.checkpointer is None and self.store is None:
+            return self
+        twin = GraphBuilder(
+            self.registry,
+            self.state_class if self._explicit_state else None,
+        )
+        return twin
 
     def _wire_llm_and_tools(
         self, fn: Callable, node: NodeConfig, graph_llm: LLMConfig | None
@@ -227,9 +301,14 @@ class GraphBuilder:
     def _wrap_mapped_router(
         self, router_fn: Callable, router_name: str, allowed_keys: set[str]
     ) -> Callable:
-        """Wrap a router function to validate its return value against allowed keys."""
-        def _validated_router(state):
-            result = router_fn(state)
+        """Wrap a router function to validate its return value against allowed keys.
+
+        The wrapper must be invisible to LangGraph: ``functools.wraps`` exposes
+        the router's own signature (via ``__wrapped__``) so injected parameters
+        such as ``config`` are still passed, and coroutine routers get an
+        ``async`` wrapper so LangGraph awaits them.
+        """
+        def _check(result):
             if not isinstance(result, str):
                 raise ConfigValidationError(
                     f"Router '{router_name}' returned {type(result).__name__}, "
@@ -242,11 +321,41 @@ class GraphBuilder:
                     f"Allowed keys: {sorted_keys}."
                 )
             return result
+
+        # An instance with ``async def __call__`` is async too, as LangGraph sees it.
+        is_async = inspect.iscoroutinefunction(router_fn) or (
+            inspect.iscoroutinefunction(getattr(router_fn, "__call__", None))
+        )
+        if is_async:
+            @functools.wraps(router_fn)
+            async def _validated_async_router(*args, **kwargs):
+                return _check(await router_fn(*args, **kwargs))
+            return _validated_async_router
+
+        @functools.wraps(router_fn)
+        def _validated_router(*args, **kwargs):
+            return _check(router_fn(*args, **kwargs))
         return _validated_router
 
     def _resolve_sentinel(self, name: str) -> str:
         """Map "START"/"END" strings to LangGraph constants, pass others through."""
         return _SENTINELS.get(name, name)
+
+
+def _node_kwargs(node: NodeConfig) -> dict:
+    """Extra ``add_node()`` kwargs derived from the node declaration.
+
+    ``destinations`` tells LangGraph where a node can route itself via
+    ``Command(goto=...)``. Without it such a node has no static outgoing edges,
+    and the rendered diagram invents a wrong ``--> END`` edge. See ADR-006.
+    """
+    if node.destinations is None:
+        return {}
+    return {
+        "destinations": tuple(
+            _SENTINELS.get(d, d) for d in node.destinations
+        )
+    }
 
 
 # -- match routing (module-level: no builder state needed) --
@@ -296,30 +405,56 @@ def _make_match_router(field: str, allowed_keys: set[str]) -> Callable:
 # -- cross-file imports (task-023) --
 
 
+def _resolve_relative(path: str, base_dir: Path | None, what: str) -> Path:
+    """Resolve a path from a definition against the directory that declared it.
+
+    Absolute paths need no origin. A relative path from a definition with no
+    file origin (in-memory or database) and no explicit ``base_dir`` is an
+    error rather than a silent lookup in the process working directory.
+    """
+    candidate = Path(path)
+    if candidate.is_absolute():
+        return candidate.resolve()
+    if base_dir is None:
+        raise ConfigValidationError(
+            f"{what} '{path}' is a relative path, but the definition has no file "
+            "origin to resolve it against. Pass base_dir= to build() / "
+            "build_graph_from_db(), or use an absolute path."
+        )
+    return (base_dir / candidate).resolve()
+
+
 def _resolve_imports(
-    config: GraphConfig, base_dir: Path, chain: tuple[Path, ...] = ()
-) -> GraphConfig:
+    config: GraphConfig, base_dir: Path | None, chain: tuple[Path, ...] = ()
+) -> tuple[GraphConfig, dict[str, Path | None]]:
     """Merge node definitions from imported YAML files into *config*.
 
     Imports are resolved recursively (imported files may import too), relative
     to the importing file. Circular imports and name collisions raise
     ``ConfigValidationError``.
+
+    Returns the merged config plus a ``{node_name: origin_dir}`` map: the
+    directory of the file that declared each node. The origin is kept out of
+    the Pydantic schema because it is not user-facing YAML.
     """
+    origins: dict[str, Path | None] = {n.name: base_dir for n in config.nodes}
     if not config.imports:
-        return config
+        return config, origins
 
     merged_nodes = list(config.nodes)
     existing = {n.name for n in merged_nodes}
 
     for imp in config.imports:
-        resolved = (base_dir / imp.file).resolve()
+        resolved = _resolve_relative(imp.file, base_dir, "Import")
         if resolved in chain:
             cycle = " -> ".join(p.name for p in (*chain, resolved))
             raise ConfigValidationError(f"Circular import: {cycle}")
 
         raw = load_yaml(resolved)
         imported = validate_config(raw)
-        imported = _resolve_imports(imported, resolved.parent, (*chain, resolved))
+        imported, imported_origins = _resolve_imports(
+            imported, resolved.parent, (*chain, resolved)
+        )
 
         available = {n.name: n for n in imported.nodes}
         wanted = imp.nodes if imp.nodes is not None else list(available)
@@ -337,9 +472,11 @@ def _resolve_imports(
                     "with an existing node"
                 )
             merged_nodes.append(available[name])
+            origins[name] = imported_origins[name]
             existing.add(name)
 
-    return config.model_copy(update={"nodes": merged_nodes, "imports": None})
+    merged = config.model_copy(update={"nodes": merged_nodes, "imports": None})
+    return merged, origins
 
 
 # -- mermaid rendering (task-015) --

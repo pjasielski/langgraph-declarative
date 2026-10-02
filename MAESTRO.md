@@ -78,11 +78,13 @@ If the user doesn't provide a title and jumps into work, ask: "Should I open a s
 
 | Task                         | Load                                                                        | Skip                          |
 | ---------------------------- | --------------------------------------------------------------------------- | ----------------------------- |
-| **Exploration**        | HANDOFF.md, docs/01-explore/                                                        | Code, design, plan                 |
+| **Exploration**        | HANDOFF.md, docs/00-reference/, docs/01-explore/                                    | Code, design, plan                 |
+| **PoC spec**           | HANDOFF.md, docs/00-reference/, docs/01-explore/, DECISIONS.md                      | Code, full-track docs              |
 | **Requirements**       | HANDOFF.md, docs/01-explore/, DECISIONS.md                                          | Code, design                       |
 | **Design**             | HANDOFF.md, REQUIREMENTS.md, docs/01-explore/ (technical sections), maestro.toml    | Code, test files                   |
 | **Planning**           | HANDOFF.md, DESIGN.md, ROADMAP.md, existing tasks                                       | Full code, exploration             |
 | **Implementation**     | HANDOFF.md, task file, DESIGN.md (relevant section), source files                       | Other tasks, exploration, req      |
+| **Implementation (PoC)** | HANDOFF.md, docs/02-poc/POC.md, source files                                          | Explore artifacts, reference       |
 | **Code review**        | HANDOFF.md, DESIGN.md, files being reviewed                                              | Exploration, planning              |
 | **Testing**            | HANDOFF.md, task file, source code, DESIGN.md (expected behaviour)                      | Exploration, planning              |
 | **Debugging**          | HANDOFF.md, error context, source files, DESIGN.md                                       | Everything unrelated               |
@@ -105,7 +107,10 @@ Open questions              → OPEN_QUESTIONS.md
 Activity log                → WORKLOG.md
 Project config              → maestro.toml
 
+Source materials (given)    → docs/00-reference/   (client briefs, specs, transcripts — read-only to Maestro,
+                                                    authoritative on intent, read first by /mae-explore)
 Exploration artifacts       → docs/01-explore/
+PoC spec (PoC track)        → docs/02-poc/POC.md   (requirements + design + roadmap in one)
 Requirements               → docs/02-requirements/REQUIREMENTS.md
 Design (architecture)      → docs/03-design/DESIGN.md
 Roadmap & tasks            → docs/04-plan/ROADMAP.md and docs/04-plan/tasks/
@@ -200,7 +205,7 @@ Cursor adapters             → .cursor/rules/  (maestro-core.mdc + maestro-disp
 
 ### Auto-Update Triggers for _summary.md
 
-Update the session's `_summary.md` when:
+Append the session's `_summary.md` when:
 
 1. A decision is confirmed, proposed, or parked
 2. An open question is identified or resolved
@@ -280,16 +285,21 @@ Use in `_summary.md` to track decision lifecycle:
 
 ```
 Standard:   explore → req → design → plan → do → review
+PoC track:  explore → poc → do → [review]            ← time-boxed builds, prototypes, spikes
+Graduation: ... poc → do → plan (M02+) → do          ← the PoC worked; keep going
 PoC-first:  explore (light) → do (PoC) → [feedback] → explore (refined) → req → design → do
 Fast-track: explore → design → do → review
 Iterative:  explore → req → do (MVP) → [feedback] → explore → req (revised) → do
 ```
+
+**PoC track vs. full track.** `/mae-poc` produces one file containing requirements, design, and roadmap; the full track produces three. They are mutually exclusive — a project uses one or the other, which is why `docs/02-poc/` and `docs/02-requirements/` share a number without colliding. Use the PoC track when the whole build is one milestone and speed matters more than reviewability.
 
 The agent should suggest next steps based on what exists, but never block the user from choosing a different path.
 
 | #  | Phase        | Command           | Alias  | Output                                                    |
 | -- | ------------ | ----------------- | ------ | --------------------------------------------------------- |
 | 01 | Explore      | `/mae-explore`  | `mex` | Understanding docs, questions, gaps, readiness assessment |
+| 02 | PoC spec     | `/mae-poc`      | `mpoc` | POC.md — requirements + design + roadmap in one file (PoC track) |
 | 02 | Requirements | `/mae-req`      | `mrq` | REQUIREMENTS.md — formalized requirements                |
 | 03 | Design       | `/mae-design`   | `mds` | DESIGN.md — technical architecture                       |
 | 04 | Plan         | `/mae-plan`     | `mpl` | ROADMAP.md + tasks/ — milestones and task files          |
@@ -316,10 +326,25 @@ These folders are created when first needed, not by `init`:
 ```
 Session (workbench)                     Delivery (confirmed)
 ────────────────                        ────────────────────
+docs/00-reference/  ← placed by the user before anything runs; read-only to Maestro
+
 /mae-explore
+  ← reads docs/00-reference/ (authoritative on intent)
   → working artifacts (session)  ──promote──→  docs/01-explore/
   → /mae-explore doc (session)   ──promote──→  docs/01-explore/
 
+── PoC track ──────────────────────────────────────────────
+/mae-poc
+  ← reads docs/00-reference/ + docs/01-explore/
+  → POC.md                        ──────────→  docs/02-poc/POC.md
+  → report (session)
+
+/mae-do poc
+  ← reads docs/02-poc/POC.md (one read: req + design + roadmap)
+  → code, docs, config           ──────────→  in-place
+  → status + § 6 Current State updated in POC.md after each task
+
+── Full track ─────────────────────────────────────────────
 /mae-req
   ← reads docs/01-explore/*
   → requirements draft (session)  ──promote──→  docs/02-requirements/REQUIREMENTS.md
@@ -341,6 +366,7 @@ Session (workbench)                     Delivery (confirmed)
 
 All commands save to `.sessions/` first. User reviews, then promotes to `docs/` when ready.
 Exceptions: `/mae-plan` saves ROADMAP and tasks directly to docs/ (immediately actionable).
+`/mae-poc` saves POC.md directly to `docs/02-poc/` for the same reason.
 `/mae-do` saves reports to session; substantial reports can be promoted to `docs/05-implementation/`.
 
 ### Adaptive Workflow Guidance
@@ -349,9 +375,15 @@ After each command, ask yourself whether to proceed or skip:
 
 ```
 After /mae-explore:
-  "Can I describe what to build in 2 sentences?"
-    Yes → skip req, go to /mae-design or /mae-do
-    No  → run /mae-req to formalize requirements
+  "Is the whole build one milestone, with speed over reviewability?"
+    Yes → run /mae-poc, then /mae-do poc
+    No  → "Can I describe what to build in 2 sentences?"
+            Yes → skip req, go to /mae-design or /mae-do
+            No  → run /mae-req to formalize requirements
+
+After /mae-poc:
+  → /mae-do poc  (whole milestone)  or  /mae-do M01.01  (one task at a time)
+  If the PoC succeeds and work continues → /mae-plan for M02 onward
 
 After /mae-req or /mae-design:
   "Is there more than one milestone of work?"

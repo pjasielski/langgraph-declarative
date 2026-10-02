@@ -1,11 +1,11 @@
-# v1.1 feature: match routing — route on a state field's value without
+# Since 0.2.0: match routing — route on a state field's value without
 # writing a Python router function.
 #
 #   match: "category"  reads state["category"] (one level of dot-notation is
 #   supported, e.g. "result.status") and uses it as the routing key.
 #   The reserved key "default" catches any value not listed in targets.
 #
-# Also uses the v1.1 `state:` declaration (see examples/declared_state).
+# Also uses the `state:` declaration (see examples/declared_state).
 state:
   - name: "messages"
     type: "list"

@@ -89,7 +89,7 @@ Technical architecture for `langgraph-declarative` — a Python library that com
 | Category | Choice | Alternatives Considered | Rationale |
 |---|---|---|---|
 | Language | Python 3.10+ | 3.9 | `X \| Y` union syntax; matches LangGraph minimum |
-| Graph engine | LangGraph >=0.2 | — | Target framework — this library wraps it |
+| Graph engine | LangGraph >=1.0 (from 0.3.0) | >=0.2, >=0.4,<2 | Target framework. Floor is the tested contract — see ADR-008 |
 | Config format | YAML (PyYAML) | JSON, TOML | YAML supports comments, is human-friendly; standard for declarative config |
 | Validation | Pydantic v2 | dataclasses, attrs | Rich validation, JSON Schema generation (useful for v1.1), ecosystem standard |
 | Build backend | Hatchling | setuptools, poetry | Modern, minimal config, used by LangGraph itself |
@@ -107,6 +107,46 @@ Technical architecture for `langgraph-declarative` — a Python library that com
 - **Context:** The YAML structure needs validation. Options: manual dict checking, JSON Schema, Pydantic.
 - **Decision:** Use Pydantic `BaseModel` subclasses to define the expected YAML structure. Parse YAML to dict, then validate with Pydantic.
 - **Consequences:** Pydantic is already a dependency (used by LangGraph). Enables JSON Schema export in v1.1 for IDE autocomplete. Gives typed access to config fields inside the builder.
+
+**ADR-004: Checkpointer is caller-supplied, never defaulted (0.3.0, HITL)**
+- **Context:** The library could not express human-in-the-loop at all. `interrupt()` pauses a graph by *persisting state at the pause point*, and that persistence is the checkpointer — so without one, a pause cannot be resumed and there is no `thread_id` scoping. `_build()` called `graph.compile()` with no arguments and no parameter on the call chain could reach it.
+- **Decision:** Thread an optional `checkpointer` (and `store`) through the public entry points to `compile()`. Do **not** default to `InMemorySaver`.
+- **Consequences:** `compile(checkpointer=None)` is exactly today's behaviour, so the change is backward compatible. Defaulting was rejected because ownership flips by run mode: under `langgraph dev` / LangGraph Platform the *server* owns the checkpointer and one passed at compile time is silently ignored — a default would appear to work while doing nothing, which is worse than the current honest failure.
+
+**ADR-005: Subgraphs inherit the parent's checkpointer (0.3.0, HITL)**
+- **Context:** `_add_nodes` compiles subgraph files recursively via `_build_from_file`. If the builder holds a checkpointer, it is ambiguous whether nested compiles should also receive it.
+- **Decision:** Pass the checkpointer only to the top-level `compile()`. Nested subgraph compiles get none.
+- **Consequences:** Verified empirically against LangGraph 1.2.2: a subgraph compiled *without* a checkpointer still interrupts and resumes correctly when the parent graph has one — the parent's persistence covers the whole tree. Passing one to nested compiles is unnecessary, and LangGraph treats a checkpointer on a subgraph as a distinct concern (it is how you would deliberately isolate subgraph persistence), so doing it implicitly would be wrong.
+
+**ADR-006: `destinations:` is declared per node, not inferred (0.3.0, HITL)**
+- **Context:** An approval node routes itself with `Command(goto=...)` and therefore has no static outgoing edges. `add_node()` was called without `destinations=`, so LangGraph cannot know where such a node leads.
+- **Decision:** Add an optional `destinations:` list to the node schema and forward it to `add_node(..., destinations=...)`.
+- **Consequences:** The diagram is a headline feature, and the failure is worse than "missing edges": verified on LangGraph 1.2.2, a `Command(goto=...)` node with no `destinations` renders a **spurious `approval --> __end__` edge** — an actively wrong diagram, not merely an incomplete one. Inference is not possible without parsing function bodies, so the list is declared. Edge validation is unaffected: `_add_edges` iterates declared edges, so a node with none is already legal.
+
+**ADR-007: Unknown YAML keys are rejected (0.3.0)**
+- **Context:** Config models ignored unknown keys. `tool:`, `temprature:`, `interupt_before:` validated and did nothing — with HITL, a typo silently removes an approval gate.
+- **Decision:** All config models inherit a strict base (`extra="forbid"`). An explicit optional `description:` on graph, node and edge keeps documentation keys legal.
+- **Consequences:** Breaking for YAML carrying undeclared keys (acceptable in 0.x, listed in CHANGELOG). Forward-compatible extensions must be added to the schema explicitly. JSON Schema gains `additionalProperties: false`, so IDEs flag typos too.
+
+**ADR-008: LangGraph floor is `>=1.0`, no upper cap (0.3.0)**
+- **Context:** 0.2.0 declared `langgraph>=0.2` but CI only tested the lockfile. Measured: 0.2.0 cannot import the test suite; 0.2.x/0.3.x fail HITL tests; 0.4.10–1.2.2 pass.
+- **Decision:** Declare `langgraph>=1.0`. Rejected `>=0.4,<2`: accurate, but an unusual floor confuses users, and 0.x LangGraph is pre-stable. No upper cap — a speculative cap blocks users from fixes; CI's "latest" job detects a breaking major instead.
+- **Consequences:** CI tests Python 3.10/3.12/3.13 × {locked, lowest-direct, latest}. Users on LangGraph 0.4–0.6 stay on langgraph-declarative 0.2.0.
+
+**ADR-009: Relative paths resolve against the declaring file (0.3.0)**
+- **Context:** Imported nodes lost their file origin, so their relative `subgraph:` resolved against the root file. File-less builds (`build(config)`, DB) resolved against the process working directory, so behaviour depended on launch location.
+- **Decision:** Every resolved node carries the directory of the file that declared it. File-less builds take an explicit `base_dir=`; a relative path with no origin and no `base_dir` raises.
+- **Consequences:** Breaking for DB definitions that relied on the working directory. Behaviour is identical across launch locations.
+
+**ADR-010: State `default:` is introspection-only and deprecated (0.3.0)**
+- **Context:** `default:` was stored on `__field_defaults__`; LangGraph never applies TypedDict defaults, so users got a missing field.
+- **Decision:** Warn (`DeprecationWarning`) when set; document as introspection-only. Real defaults via a Pydantic state model are deferred because nodes would receive a model instead of a dict.
+- **Consequences:** No silent misbehaviour; existing YAML still loads.
+
+**ADR-011: Workflow definitions are trusted input**
+- **Context:** `yaml.safe_load` blocks object construction, but a definition can import any `module.path:attr` tool, read reachable YAML via `imports:`/`subgraph:`, and select any registered callable.
+- **Decision:** Treat definitions as code-equivalent, trusted input and document it. HITL primitives are pauses, not authorization: the host owns thread IDs, resume authorization, decision validation and audit. A restricted mode for untrusted definitions is demand-gated (M08.02).
+- **Consequences:** No new code in 0.3.0; the README carries the boundary explicitly.
 
 **ADR-003: Loader abstraction for v2 extensibility**
 - **Context:** V1 loads from YAML files. V2 may support databases, APIs, or other sources.
@@ -126,6 +166,14 @@ The YAML file is the primary data model. Pydantic models mirror this structure f
 nodes:
   - name: "node_name"              # unique within this file
     function: "registry_node_name"  # must exist in registry.nodes
+    destinations: ["node_a", "END"] # optional (0.3.0) — where this node can route
+                                    # itself via Command(goto=...); diagram-only,
+                                    # needed when the node has no static edges
+
+# Optional (0.3.0) — static interrupt points. Names must be declared nodes.
+# The dynamic alternative is calling interrupt() inside a node function.
+interrupt_before: ["approval"]
+interrupt_after: []
 
 edges:
   # Simple edge

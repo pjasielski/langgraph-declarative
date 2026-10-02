@@ -1,4 +1,4 @@
-"""Declared state (v1.1): define state fields, types, and reducers in YAML.
+"""Declared state (since 0.2.0): define state fields, types, and reducers in YAML.
 
 Compare with examples/custom_state, which builds the same kind of pipeline
 with a hand-written Python TypedDict passed as `state_class=`. Here the YAML
@@ -39,6 +39,8 @@ def summarize(state):
 
 graph = build_graph(Path(__file__).with_name("workflow.yaml"), registry)
 
+# Initial values belong in the graph input: LangGraph does not apply YAML
+# `default:` values (deprecated since 0.3.0, introspection-only).
 result = graph.invoke({
     "document": "LangGraph Declarative makes Graph definitions simple.",
     "notes": [],

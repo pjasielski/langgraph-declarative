@@ -1,4 +1,4 @@
-# v2 feature: cross-file imports — reuse node declarations across workflows.
+# Since 0.2.0: cross-file imports — reuse node declarations across workflows.
 #
 # `imports:` merges node definitions from another YAML file (path relative to
 # this file) before validation, so imported names can be used in edges below.
@@ -25,7 +25,7 @@ edges:
   - source: "START"
     target: "processor"
 
-  # Route on the processing outcome (v1.1 match routing)
+  # Route on the processing outcome (match routing, since 0.2.0)
   - source: "processor"
     match: "status"
     targets:

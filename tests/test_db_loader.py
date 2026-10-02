@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 from langgraph.graph.state import CompiledStateGraph
 
@@ -12,7 +14,9 @@ from langgraph_declarative import (
     YamlLoader,
     build_graph_from_db,
 )
-from langgraph_declarative.errors import ConfigLoadError
+from langgraph_declarative.errors import ConfigLoadError, ConfigValidationError
+
+FIXTURES = Path(__file__).parent / "fixtures"
 
 SIMPLE_DEF = {
     "nodes": [{"name": "greeter", "function": "greet"}],
@@ -85,3 +89,74 @@ class TestBuildGraphFromDb:
         assert isinstance(graph, CompiledStateGraph)
         result = graph.invoke({"messages": []})
         assert result["messages"][-1].content == "hello-from-db"
+
+
+class TestDbDefinitionBaseDir:
+    """M06.02: stored definitions have no file origin — relative paths need base_dir."""
+
+    SUBGRAPH_DEF = {
+        "nodes": [{"name": "child", "subgraph": "subgraph_child.yaml"}],
+        "edges": [
+            {"source": "START", "target": "child"},
+            {"source": "child", "target": "END"},
+        ],
+    }
+
+    def _registry(self) -> Registry:
+        reg = Registry()
+
+        @reg.node("child_step_fn")
+        def child_step_fn(state):
+            return {"messages": [{"role": "assistant", "content": "child"}]}
+
+        return reg
+
+    def test_relative_subgraph_with_base_dir(self, tmp_path):
+        db = tmp_path / "g.db"
+        SQLiteLoader(db).save("flow", self.SUBGRAPH_DEF)
+        graph = build_graph_from_db("flow", self._registry(), db, base_dir=FIXTURES)
+        result = graph.invoke({"messages": []})
+        assert [m.content for m in result["messages"]] == ["child"]
+
+    def test_relative_subgraph_without_base_dir_raises(self, tmp_path):
+        db = tmp_path / "g.db"
+        SQLiteLoader(db).save("flow", self.SUBGRAPH_DEF)
+        with pytest.raises(ConfigValidationError, match="base_dir"):
+            build_graph_from_db("flow", self._registry(), db)
+
+
+class TestConcurrentSave:
+    """M06.09: concurrent writers get distinct, consecutive versions."""
+
+    def test_concurrent_saves_allocate_distinct_versions(self, tmp_path):
+        import threading
+
+        db = tmp_path / "g.db"
+        SQLiteLoader(db)  # create the table once, outside the race
+        n = 16
+        barrier = threading.Barrier(n)
+        versions: list[int] = []
+        errors: list[BaseException] = []
+        lock = threading.Lock()
+
+        def writer(i: int) -> None:
+            loader = SQLiteLoader(db)  # one loader per thread, like separate processes
+            barrier.wait()
+            try:
+                v = loader.save("flow", {**SIMPLE_DEF, "description": f"writer {i}"})
+            except BaseException as exc:  # noqa: BLE001 — the test reports any failure
+                with lock:
+                    errors.append(exc)
+                return
+            with lock:
+                versions.append(v)
+
+        threads = [threading.Thread(target=writer, args=(i,)) for i in range(n)]
+        for t in threads:
+            t.start()
+        for t in threads:
+            t.join()
+
+        assert errors == []
+        assert sorted(versions) == list(range(1, n + 1))
+        assert SQLiteLoader(db).versions("flow") == list(range(1, n + 1))

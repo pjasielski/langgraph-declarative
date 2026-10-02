@@ -1,4 +1,4 @@
-"""Match routing (v1.1): route on a state field value, no Python router needed.
+"""Match routing (since 0.2.0): route on a state field value, no Python router needed.
 
 Compare with examples/conditional_routing, where routing requires a Python
 function registered with @registry.router(). With `match:`, the classifier

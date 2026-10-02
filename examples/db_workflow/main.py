@@ -1,4 +1,4 @@
-"""Database-driven workflows (v2): load graph definitions from SQLite.
+"""Database-driven workflows (since 0.2.0): load graph definitions from SQLite.
 
 SQLiteLoader stores workflow definitions (as YAML/JSON text) with per-source
 version tracking — workflows can be created and updated at runtime without
@@ -7,6 +7,11 @@ come from the registry.
 
 Source syntax: "support_flow" loads the latest version, "support_flow@1"
 pins an explicit version.
+
+Trust: a stored definition is code-equivalent input. It chooses which registered
+functions run, can import modules through `tools: ["module:attr"]`, and can read
+any reachable YAML file through `imports:` / `subgraph:`. Only let trusted parties
+write to this table — never store end-user-supplied definitions here.
 """
 
 import tempfile

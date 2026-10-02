@@ -1,4 +1,4 @@
-"""LLM config + tools in YAML (v2): nodes receive a pre-configured LLM.
+"""LLM config + tools in YAML (since 0.2.0): nodes receive a pre-configured LLM.
 
 The opt-in contract: a node function that accepts an `llm` keyword parameter
 gets a ready-made LangChain chat model injected, built from the YAML config

@@ -1,0 +1,38 @@
+# Human-in-the-loop: read-only tools run freely, write tools need approval.
+#
+# The gate is structural — `execute` is unreachable without a human resuming,
+# rather than being an instruction in a system prompt.
+
+state:
+  - name: "action"
+    type: "str"
+  - name: "log"
+    type: "list[str]"
+    reducer: "append"
+
+nodes:
+  - name: "agent"
+    function: "agent"
+  - name: "read_tool"
+    function: "read_tool"
+  - name: "approval"
+    function: "approval"
+    # No static outgoing edges — routes itself via Command(goto=...).
+    # Declared so the diagram stays correct.
+    destinations: ["execute", "agent", "END"]
+  - name: "execute"
+    function: "execute"
+
+edges:
+  - source: "START"
+    target: "agent"
+  - source: "agent"
+    match: "action"
+    targets:
+      read: "read_tool"
+      write: "approval"
+      default: "END"
+  - source: "read_tool"
+    target: "END"
+  - source: "execute"
+    target: "END"

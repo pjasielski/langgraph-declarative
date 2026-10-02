@@ -74,10 +74,47 @@ class TestBuildStateClass:
         assert cls.__annotations__["summary"] is str
 
     def test_defaults_stored(self):
-        cls = build_state_class(
-            _fields({"name": "summary", "type": "str", "default": "n/a"})
-        )
+        with pytest.warns(DeprecationWarning):
+            cls = build_state_class(
+                _fields({"name": "summary", "type": "str", "default": "n/a"})
+            )
         assert cls.__field_defaults__ == {"summary": "n/a"}
+
+
+class TestDefaultDeprecation:
+    """M06.04 / ADR-010: ``default:`` is introspection-only and deprecated."""
+
+    def test_default_emits_deprecation_warning(self):
+        with pytest.warns(DeprecationWarning, match=r"'count'.*no runtime effect"):
+            build_state_class(
+                _fields(
+                    {"name": "count", "type": "int", "default": 5},
+                    {"name": "label", "type": "str"},
+                )
+            )
+
+    def test_no_warning_without_default(self, recwarn):
+        build_state_class(_fields({"name": "label", "type": "str"}))
+        assert not [w for w in recwarn if w.category is DeprecationWarning]
+
+    def test_warning_points_at_caller_outside_package(self, tmp_path):
+        from langgraph_declarative import Registry, build_graph
+
+        reg = Registry()
+
+        @reg.node("noop")
+        def noop(state):
+            return {}
+
+        path = tmp_path / "wf.yaml"
+        path.write_text(
+            "state:\n  - {name: count, type: int, default: 5}\n"
+            "nodes:\n  - {name: a, function: noop}\n"
+            "edges:\n  - {source: START, target: a}\n"
+        )
+        with pytest.warns(DeprecationWarning) as record:
+            build_graph(path, reg)
+        assert record[0].filename == __file__
 
 
 class TestInvalidConfigs:

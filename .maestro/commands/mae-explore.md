@@ -21,12 +21,15 @@ $ARGUMENTS — optional: topic, file path, "ask", or "doc"
 
 1. **Scan for existing project resources:**
 
+   - **Read `docs/00-reference/` first** — source materials the user did not write (client briefs, specs, transcripts, exported tickets). This is the primary source of intent. Read these files in full unless they are very large, in which case report sizes and ask.
    - Always read: `README.md`, `maestro.toml`, `HANDOFF.md`
    - Scan `docs/` — list file names and sizes (do NOT read contents yet)
    - Scan `data/` — list file names only (flag if folder is large)
    - Scan source code — directory tree structure only (no file contents)
    - Report findings: "I see these existing resources: [list]. Which should I include in my analysis?"
    - Wait for user direction before reading large files or datasets
+
+   **Reference material is authoritative.** Where `docs/00-reference/` conflicts with what the code implies, the reference wins and the difference is a finding worth reporting — code describes the current state, reference describes the intent.
 2. **Produce initial scope artifact** containing:
 
    - Business + technical overview (from whatever is available)
@@ -158,6 +161,7 @@ The explore report is a **living document** — running `explore doc` again repl
 
 1. **Read context:**
 
+   - `docs/00-reference/` (source materials — authoritative on intent)
    - `docs/01-explore/` (confirmed artifacts)
    - Current session files (working artifacts)
    - `DECISIONS.md`, `OPEN_QUESTIONS.md`
@@ -186,9 +190,10 @@ The explore report is a **living document** — running `explore doc` again repl
 
 ## Artifact Flow
 
+Source materials → docs/00-reference/ (placed by the user, read first, never edited)
 All explore artifacts → .sessions/ (working material)
 Final report (`doc`) → .sessions/ → user promotes to docs/01-explore/
-When ready → user runs `/mae-req` to formalize requirements
+When ready → user runs `/mae-req` to formalize requirements, or `/mae-poc` for the PoC track
 
 ## Rules
 

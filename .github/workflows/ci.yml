@@ -8,22 +8,68 @@ on:
 
 jobs:
   test:
+    name: test (py${{ matrix.python-version }}, ${{ matrix.deps }})
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
-        python-version: ["3.10", "3.12"]
+        python-version: ["3.10", "3.12", "3.13"]
+        # locked: the committed uv.lock
+        # lowest: every direct dependency at its declared floor (langgraph 1.0, …)
+        # latest: newest releases, ignoring the lock — catches upstream breakage
+        deps: [locked, lowest, latest]
+    env:
+      # Pin the interpreter explicitly; otherwise uv may pick the runner's default.
+      UV_PYTHON: ${{ matrix.python-version }}
 
     steps:
       - uses: actions/checkout@v4
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v3
+        uses: astral-sh/setup-uv@v6
 
-      - name: Set up Python ${{ matrix.python-version }}
-        run: uv python install ${{ matrix.python-version }}
+      - name: Run tests (locked)
+        if: matrix.deps == 'locked'
+        run: uv run --locked --extra dev pytest
 
-      - name: Run tests
-        run: uv run --extra dev pytest
+      - name: Run tests (lowest)
+        if: matrix.deps == 'lowest'
+        run: uv run --isolated --resolution lowest-direct --extra dev pytest
 
-      - name: Build package
+      - name: Run tests (latest)
+        if: matrix.deps == 'latest'
+        run: uv run --isolated --upgrade --extra dev pytest
+
+  package:
+    # Tests the wheel users install, not the source tree: catches files that
+    # exist in the repo but are missing from the distribution.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Build sdist and wheel
         run: uv build
+
+      - name: Install the wheel into a clean venv
+        run: |
+          uv venv /tmp/smoke --python 3.12
+          uv pip install --python /tmp/smoke/bin/python dist/*.whl
+
+      - name: Import, read the packaged schema, run the quickstart
+        # Run from /tmp so the repo's src/ cannot shadow the installed package.
+        working-directory: /tmp
+        run: |
+          /tmp/smoke/bin/python - <<'PY'
+          import json
+          from importlib import resources
+          import langgraph_declarative as ld
+          pkg = resources.files("langgraph_declarative")
+          schema = json.loads((pkg / "workflow.schema.json").read_text())
+          assert schema == ld.export_json_schema(), "packaged schema drifted"
+          assert (pkg / "py.typed").is_file(), "py.typed missing"
+          assert "site-packages" in ld.__file__, ld.__file__
+          PY
+          /tmp/smoke/bin/python "$GITHUB_WORKSPACE/examples/quickstart/main.py"
