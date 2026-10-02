@@ -82,6 +82,17 @@ changes, listed first — each turns a silent misbehaviour into an explicit erro
 - **`human_in_the_loop` example** — a runnable approval gate showing the accept vs.
   reject side-effect difference.
 
+### Documentation
+
+- **Security & trust** — workflow definitions are trusted input: they can import
+  modules (`tools: ["module:attr"]`), read reachable YAML files (`imports:`,
+  `subgraph:`) and select registered callables. Do not build graphs from untrusted
+  definitions.
+- **What the host owns in HITL** — thread-ID ownership, resume authorization,
+  decision validation, stale/repeated decisions and audit. Static interrupts are a
+  pause, not an authorization check; `destinations:` is diagram metadata and is not
+  enforced at runtime.
+
 ### Notes
 
 - **The checkpointer is never defaulted, by design.** Ownership flips by run mode:

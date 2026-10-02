@@ -30,6 +30,24 @@ pip install langgraph-declarative                 # uv add langgraph-declarative
 pip install "langgraph-declarative[anthropic]"    # optional: llm: support ([openai] too)
 ```
 
+## Security & trust
+
+**Workflow definitions are trusted input — treat them like code.** YAML is parsed with
+`yaml.safe_load`, so a file cannot construct arbitrary Python objects, but a definition
+still decides what runs and what is read:
+
+- **Module imports** — a `tools:` entry such as `"module.path:attr"` imports that
+  module (running its top-level code) and binds whatever attribute it names.
+- **Filesystem reach** — `imports:` and `subgraph:` read any YAML file the process can
+  reach, including `../` and absolute paths.
+- **Callable selection** — `function:` and `path:` may name any callable in your
+  registry.
+
+That is fine for files in your repository or a database only your team writes. Do not
+build graphs from definitions supplied by end users or other untrusted parties. A
+restricted mode for that case is a future, demand-gated item
+([roadmap M08](https://github.com/pjasielski/langgraph-declarative/blob/main/docs/04-plan/ROADMAP.md)).
+
 ## Quickstart
 
 **1. Register your functions.**
@@ -158,7 +176,7 @@ nodes:
     tools: ["get_weather"]          # @registry.tool() names or "module.path:attr"
   - name: "approval"
     function: "approval_fn"
-    destinations: ["execute", "END"]  # where this node routes itself via Command(goto=)
+    destinations: ["execute", "END"]  # diagram metadata for Command(goto=) — not enforced
 
 edges:
   - source: "START"                 # START, END, or a node name
@@ -218,6 +236,9 @@ nodes:
     destinations: ["execute", "END"]
 ```
 
+`destinations` describes the graph; it does not restrict it. A node that returns
+`Command(goto=...)` to a target missing from the list still goes there at runtime.
+
 For a pause that needs no Python at all, declare it in YAML instead:
 
 ```yaml
@@ -230,6 +251,25 @@ interrupt_before: ["approval"]
 > `langgraph dev` / LangGraph Platform the **server** owns it and a checkpointer passed
 > at compile time is silently ignored. A built-in default would appear to work locally
 > and quietly do nothing once deployed.
+
+### What the host owns
+
+The library gives you pause and resume primitives, not an approval system. Your
+application is responsible for:
+
+- **Thread IDs** — who owns a `thread_id`, and that one user cannot resume another
+  user's run. Anyone who can call `invoke(Command(resume=...), config)` with a thread ID
+  can answer its pause.
+- **Resume authorization** — checking that the caller may approve *this* action before
+  passing their decision to the graph.
+- **Decision validation** — the resume value reaches your node unchecked; validate it
+  (the example treats anything but `"accept"` as a rejection).
+- **Stale and repeated decisions** — what happens when a decision arrives late, twice,
+  or after the run moved on.
+- **Audit** — recording who decided what, and when.
+
+`interrupt_before:` / `interrupt_after:` create a pause, not an authorization check: a
+static pause resumes on any `invoke(None, config)` for that thread.
 
 See [human_in_the_loop](https://github.com/pjasielski/langgraph-declarative/tree/main/examples/human_in_the_loop/) for a runnable approval gate.
 
