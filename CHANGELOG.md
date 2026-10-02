@@ -22,6 +22,13 @@ changes, listed first — each turns a silent misbehaviour into an explicit erro
   origin and no `base_dir` raises `ConfigValidationError`. Absolute paths and
   `build_graph(path)` are unaffected. **Migrate:** pass `base_dir=` where you build
   in-memory or DB definitions that use relative paths.
+- **Unknown YAML keys are rejected.** Every config model now forbids extra keys.
+  Previously `tool:`, `temprature:` or `interupt_before:` validated cleanly and did
+  nothing — with HITL, a typo in `interrupt_before` silently removed an approval
+  gate. The error names the key and its location and suggests the closest valid
+  key. `schema/workflow.schema.json` now sets `additionalProperties: false`.
+  **Migrate:** remove or fix unknown keys; move free-text notes to the new
+  `description:` field.
 
 ### Fixed
 
@@ -35,6 +42,9 @@ changes, listed first — each turns a silent misbehaviour into an explicit erro
   against the importing file and failed with `Config file not found`.
 
 ### Added
+
+- **`description:`** — optional free text on the graph, nodes and edges. It is the
+  one documentation key that strict validation allows.
 
 - **Caller-supplied `checkpointer`** — `build_graph()`, `GraphBuilder()`, and
   `build_graph_from_db()` accept a keyword-only `checkpointer`, passed to

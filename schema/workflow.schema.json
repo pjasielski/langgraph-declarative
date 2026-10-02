@@ -1,11 +1,24 @@
 {
   "$defs": {
     "EdgeConfig": {
+      "additionalProperties": false,
       "description": "A single edge declaration with validation rules.\n\nExactly one of ``target``, ``path``, or ``match`` must be provided.\n``targets`` (the path_map) is required with ``match`` and optional\nwith ``path``.",
       "properties": {
         "source": {
           "title": "Source",
           "type": "string"
+        },
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Description"
         },
         "target": {
           "anyOf": [
@@ -72,6 +85,7 @@
       "type": "object"
     },
     "ImportConfig": {
+      "additionalProperties": false,
       "description": "A cross-file import: pull node definitions from another YAML file.",
       "properties": {
         "file": {
@@ -101,6 +115,7 @@
       "type": "object"
     },
     "LLMConfig": {
+      "additionalProperties": false,
       "description": "LLM parameters, usable at graph level (default) or per node (override).",
       "properties": {
         "provider": {
@@ -156,11 +171,24 @@
       "type": "object"
     },
     "NodeConfig": {
+      "additionalProperties": false,
       "description": "A single node declaration.\n\nExactly one of ``function`` (registered function reference) or\n``subgraph`` (path to another YAML workflow file) must be provided.",
       "properties": {
         "name": {
           "title": "Name",
           "type": "string"
+        },
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Description"
         },
         "function": {
           "anyOf": [
@@ -235,6 +263,7 @@
       "type": "object"
     },
     "StateFieldConfig": {
+      "additionalProperties": false,
       "description": "A single state field declaration from the YAML ``state:`` section.",
       "properties": {
         "name": {
@@ -269,8 +298,21 @@
       "type": "object"
     }
   },
+  "additionalProperties": false,
   "description": "Top-level validated graph configuration.",
   "properties": {
+    "description": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Description"
+    },
     "nodes": {
       "items": {
         "$ref": "#/$defs/NodeConfig"

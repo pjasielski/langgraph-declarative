@@ -116,11 +116,16 @@ Three pieces: a **registry** of Python functions, a **definition** of the topolo
 ## YAML reference
 
 Only `nodes` is required. The simplest workflow is a list of nodes and edges.
+Unknown keys are rejected with the closest valid key suggested (from 0.3.0), so a
+typo such as `interupt_before:` fails loudly instead of silently doing nothing. Use
+`description:` on the graph, a node or an edge for free-text documentation.
 
 <details>
 <summary><b>Full schema — state, llm, imports, nodes, edges</b></summary>
 
 ```yaml
+description: "Support triage"       # optional free text — also on nodes and edges
+
 state:                              # declare the state schema (default: MessagesState)
   - name: "category"
     type: "str"                     # str | int | float | bool | list | dict | list[str] | list[dict]
@@ -142,6 +147,7 @@ interrupt_after: []                 # pause after these nodes run
 nodes:
   - name: "classifier"
     function: "classify"            # registered via @registry.node()
+    description: "Tags the request" # optional free text
   - name: "research"
     subgraph: "child.yaml"          # embed another workflow, relative to the declaring file
   - name: "agent"

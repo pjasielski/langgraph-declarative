@@ -148,15 +148,91 @@ class TestValidateConfig:
         with pytest.raises(ConfigValidationError, match="Duplicate node name: 'dup'"):
             validate_config(raw)
 
-    def test_extra_unknown_fields_are_ignored(self):
+    def test_description_allowed_on_graph_node_and_edge(self):
         raw = {
-            "nodes": [{"name": "a", "function": "fn_a", "description": "extra field"}],
-            "edges": [{"source": "START", "target": "a", "label": "also extra"}],
-            "metadata": {"version": "1.0"},
+            "description": "A documented workflow",
+            "nodes": [{"name": "a", "function": "fn_a", "description": "step a"}],
+            "edges": [{"source": "START", "target": "a", "description": "entry"}],
         }
         config = validate_config(raw)
-        assert len(config.nodes) == 1
-        assert len(config.edges) == 1
+        assert config.description == "A documented workflow"
+        assert config.nodes[0].description == "step a"
+        assert config.edges[0].description == "entry"
+
+
+class TestUnknownKeysRejected:
+    """M06.03 / ADR-007: unknown keys are errors, not silently ignored."""
+
+    def _error(self, raw: dict) -> str:
+        with pytest.raises(ConfigValidationError) as info:
+            validate_config(raw)
+        return str(info.value)
+
+    def test_top_level_typo_suggests_closest_key(self):
+        msg = self._error({
+            "nodes": [{"name": "a", "function": "fn_a"}],
+            "interupt_before": ["a"],
+        })
+        assert "Unknown key 'interupt_before' at top level" in msg
+        assert "Did you mean 'interrupt_before'?" in msg
+
+    def test_node_key_names_the_node(self):
+        msg = self._error({
+            "nodes": [
+                {"name": "a", "function": "fn_a"},
+                {"name": "agent", "function": "fn_b", "tool": ["x"]},
+            ],
+        })
+        assert "Unknown key 'tool' at nodes[1] ('agent')" in msg
+        assert "Did you mean 'tools'?" in msg
+
+    def test_edge_key_names_the_edge(self):
+        msg = self._error({
+            "nodes": [{"name": "a", "function": "fn_a"}],
+            "edges": [{"source": "START", "target": "a", "label": "x"}],
+        })
+        assert "Unknown key 'label' at edges[0] (edge from 'START')" in msg
+        assert "Allowed keys:" in msg
+
+    def test_nested_llm_key(self):
+        msg = self._error({
+            "nodes": [{
+                "name": "a", "function": "fn_a", "llm": {"temprature": 0.2},
+            }],
+        })
+        assert "Unknown key 'temprature' at nodes[0].llm" in msg
+        assert "Did you mean 'temperature'?" in msg
+
+    def test_graph_llm_key(self):
+        msg = self._error({
+            "llm": {"modle": "x"},
+            "nodes": [{"name": "a", "function": "fn_a"}],
+        })
+        assert "Unknown key 'modle' at llm" in msg
+        assert "Did you mean 'model'?" in msg
+
+    def test_state_field_key(self):
+        msg = self._error({
+            "state": [{"name": "count", "type": "int", "reduce": "append"}],
+            "nodes": [{"name": "a", "function": "fn_a"}],
+        })
+        assert "Unknown key 'reduce' at state[0] ('count')" in msg
+        assert "Did you mean 'reducer'?" in msg
+
+    def test_import_key(self):
+        msg = self._error({
+            "imports": [{"file": "x.yaml", "node": ["a"]}],
+            "nodes": [{"name": "a", "function": "fn_a"}],
+        })
+        assert "Unknown key 'node' at imports[0]" in msg
+        assert "Did you mean 'nodes'?" in msg
+
+    def test_other_errors_still_reported_alongside(self):
+        msg = self._error({
+            "nodes": [{"name": "a", "functon": "fn_a"}],
+        })
+        assert "Unknown key 'functon' at nodes[0] ('a')" in msg
+        assert "Did you mean 'function'?" in msg
 
     def test_nodes_only_no_edges_allowed(self):
         # v2: edges are optional so shared-node files (imports) can validate.

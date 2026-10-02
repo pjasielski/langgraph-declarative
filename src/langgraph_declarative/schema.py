@@ -5,13 +5,15 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from pydantic import BaseModel, model_validator
+from pydantic import ValidationError, model_validator
 
+from langgraph_declarative._base import StrictModel
 from langgraph_declarative.errors import (
     ConfigValidationError,
     NodeNotFoundError,
     RouterNotFoundError,
     format_not_found,
+    suggest_similar,
 )
 from langgraph_declarative.state_factory import StateFieldConfig
 
@@ -19,7 +21,7 @@ from langgraph_declarative.state_factory import StateFieldConfig
 _SENTINELS = {"START", "END"}
 
 
-class LLMConfig(BaseModel):
+class LLMConfig(StrictModel):
     """LLM parameters, usable at graph level (default) or per node (override)."""
 
     provider: str | None = None
@@ -28,7 +30,7 @@ class LLMConfig(BaseModel):
     max_tokens: int | None = None
 
 
-class NodeConfig(BaseModel):
+class NodeConfig(StrictModel):
     """A single node declaration.
 
     Exactly one of ``function`` (registered function reference) or
@@ -36,6 +38,7 @@ class NodeConfig(BaseModel):
     """
 
     name: str
+    description: str | None = None
     function: str | None = None
     subgraph: str | None = None
     llm: LLMConfig | None = None
@@ -61,7 +64,7 @@ class NodeConfig(BaseModel):
         return self
 
 
-class EdgeConfig(BaseModel):
+class EdgeConfig(StrictModel):
     """A single edge declaration with validation rules.
 
     Exactly one of ``target``, ``path``, or ``match`` must be provided.
@@ -70,6 +73,7 @@ class EdgeConfig(BaseModel):
     """
 
     source: str
+    description: str | None = None
     target: str | list[str] | None = None
     path: str | None = None
     match: str | None = None
@@ -114,16 +118,17 @@ class EdgeConfig(BaseModel):
         return self
 
 
-class ImportConfig(BaseModel):
+class ImportConfig(StrictModel):
     """A cross-file import: pull node definitions from another YAML file."""
 
     file: str
     nodes: list[str] | None = None  # None = import all nodes from the file
 
 
-class GraphConfig(BaseModel):
+class GraphConfig(StrictModel):
     """Top-level validated graph configuration."""
 
+    description: str | None = None
     nodes: list[NodeConfig]
     edges: list[EdgeConfig] = []
     state: list[StateFieldConfig] | None = None
@@ -151,12 +156,76 @@ class GraphConfig(BaseModel):
 def validate_config(raw: dict) -> GraphConfig:
     """Parse a raw dict into a validated ``GraphConfig``.
 
-    Raises ``ConfigValidationError`` on any structural problem.
+    Raises ``ConfigValidationError`` on any structural problem. Unknown keys
+    are reported by name and location, with a closest-match suggestion.
     """
     try:
         return GraphConfig.model_validate(raw)
+    except ValidationError as exc:
+        raise ConfigValidationError(_format_validation_error(exc, raw)) from exc
     except Exception as exc:
         raise ConfigValidationError(str(exc)) from exc
+
+
+# Which model owns the keys at a location (list indices stripped from the path).
+_MODEL_AT: dict[tuple[str, ...], type[StrictModel]] = {
+    (): GraphConfig,
+    ("nodes",): NodeConfig,
+    ("nodes", "llm"): LLMConfig,
+    ("edges",): EdgeConfig,
+    ("state",): StateFieldConfig,
+    ("llm",): LLMConfig,
+    ("imports",): ImportConfig,
+}
+
+
+def _format_validation_error(exc: ValidationError, raw: object) -> str:
+    """Render unknown-key errors readably; keep Pydantic's text for the rest."""
+    errors = exc.errors()
+    unknown = [e for e in errors if e["type"] == "extra_forbidden"]
+    if not unknown:
+        return str(exc)
+
+    lines = []
+    for err in unknown:
+        *parent, key = err["loc"]
+        model = _MODEL_AT.get(tuple(p for p in parent if isinstance(p, str)))
+        line = f"Unknown key '{key}' at {_describe_location(parent, raw)}."
+        if model is not None:
+            allowed = list(model.model_fields)
+            suggestions = suggest_similar(str(key), allowed, n=1)
+            if suggestions:
+                line += f" Did you mean '{suggestions[0]}'?"
+            else:
+                line += f" Allowed keys: {', '.join(allowed)}."
+        lines.append(line)
+
+    for err in errors:
+        if err["type"] != "extra_forbidden":
+            where = _describe_location(list(err["loc"]), raw)
+            lines.append(f"{where}: {err['msg']}")
+    return "\n".join(lines)
+
+
+def _describe_location(loc: list, raw: object) -> str:
+    """``['nodes', 2]`` → ``nodes[2] (node 'approval')``; ``[]`` → ``top level``."""
+    if not loc:
+        return "top level"
+    text = ""
+    node = raw
+    for part in loc:
+        text += f"[{part}]" if isinstance(part, int) else (
+            f".{part}" if text else str(part)
+        )
+        try:
+            node = node[part]  # type: ignore[index]
+        except (KeyError, IndexError, TypeError):
+            node = None
+    if isinstance(node, dict) and isinstance(node.get("name"), str):
+        text += f" ('{node['name']}')"
+    elif isinstance(node, dict) and isinstance(node.get("source"), str):
+        text += f" (edge from '{node['source']}')"
+    return text
 
 
 def export_json_schema(output_path: str | Path | None = None) -> dict:

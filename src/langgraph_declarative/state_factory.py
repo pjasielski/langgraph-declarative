@@ -10,8 +10,9 @@ from __future__ import annotations
 import operator
 from typing import Annotated, Any, TypedDict
 
-from pydantic import BaseModel, field_validator
+from pydantic import field_validator
 
+from langgraph_declarative._base import StrictModel
 from langgraph_declarative.errors import format_not_found
 
 # YAML type name → Python type used in the state annotation.
@@ -30,7 +31,7 @@ _TYPE_MAP: dict[str, Any] = {
 _REDUCER_NAMES = ("add_messages", "append", "replace")
 
 
-class StateFieldConfig(BaseModel):
+class StateFieldConfig(StrictModel):
     """A single state field declaration from the YAML ``state:`` section."""
 
     name: str
