@@ -10,10 +10,9 @@ from __future__ import annotations
 import operator
 import sys
 import warnings
-from pathlib import Path
 from typing import Annotated, Any, TypedDict
 
-from pydantic import field_validator
+from pydantic import Field, field_validator
 
 from langgraph_declarative._base import StrictModel
 from langgraph_declarative.errors import format_not_found
@@ -39,7 +38,9 @@ class StateFieldConfig(StrictModel):
 
     name: str
     type: str
-    default: Any | None = None
+    # Deprecated (ADR-010): LangGraph never applies it. Marked in the JSON
+    # Schema so IDEs flag it; build_state_class() warns at build time.
+    default: Any | None = Field(default=None, json_schema_extra={"deprecated": True})
     reducer: str = "replace"
 
     @field_validator("type")
@@ -74,10 +75,13 @@ def _external_stacklevel() -> int:
     this package, so a script calling ``build_graph()`` actually sees it
     (``DeprecationWarning`` is only shown by default when raised in ``__main__``).
     """
-    package_dir = str(Path(__file__).resolve().parent)
+    # Match on module name, not file path: paths differ under symlinked venvs.
+    package = __name__.split(".")[0]
     frame = sys._getframe(2)  # the caller of the function that warns
     level = 2
-    while frame is not None and frame.f_code.co_filename.startswith(package_dir):
+    while frame is not None and (
+        frame.f_globals.get("__name__", "").split(".")[0] == package
+    ):
         frame = frame.f_back
         level += 1
     return level

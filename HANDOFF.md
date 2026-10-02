@@ -8,10 +8,13 @@
 
 ## Current Focus
 
-1. **Release 0.3.0 (M06.10)** — follow `docs/08-deploy/RELEASE.md` from step 2: push
-   `feat/hitl` and the `v0.2.0` tag, PR to `main`, green CI (first run of the new
-   matrix and package jobs), merge, tag `v0.3.0`, GitHub release → PyPI. Then set the
-   CHANGELOG date and README "unreleased" note, and mark M05/M06 released.
+1. **Release 0.3.0 (M06.10)** — follow `docs/08-deploy/RELEASE.md`. Before tagging:
+   date the CHANGELOG heading and remove the "unreleased" wording from README and
+   `examples/README.md` (the README becomes the PyPI page and cannot be changed after
+   upload). Then push `feat/hitl` and the `v0.2.0` tag, PR to `main`, green CI (first
+   run of the new matrix and package jobs), merge, tag `v0.3.0`, GitHub release →
+   PyPI. Automated publishing needs a one-time PyPI trusted-publisher setup (see
+   RELEASE.md); 0.2.0 was uploaded by hand.
 2. **M07 — Capabilities for 0.4.0** (one session): node `params:`, side-effect-free
    `draw_mermaid()`, `build_from_loader()`, graph lint.
 3. **M08 — platform adapters**: demand-gated; do not start without a consumer.
@@ -71,7 +74,7 @@ User Code                          Library (langgraph_declarative)
 | `llm_factory.py` | `llm:` config → provider client, tool binding |
 | `errors.py` | Error types, `difflib` "did you mean?" suggestions |
 
-Stack: Python 3.10+, LangGraph ≥1.0, Pydantic ≥2.8, PyYAML ≥6.0.1, hatchling.
+Stack: Python 3.10+, LangGraph ≥1.0, Pydantic ≥2.8.2, PyYAML ≥6.0.2, hatchling.
 
 ## Where things are
 

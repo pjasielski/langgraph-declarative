@@ -361,6 +361,24 @@ class TestMappedRouterSignatures:
         with pytest.raises(ConfigValidationError, match="returned int, expected str"):
             asyncio.run(graph.ainvoke(self._INPUT))
 
+    def test_async_callable_object_router(self):
+        class Router:
+            async def __call__(self, state):
+                return "neg"
+
+        result = asyncio.run(self._build(Router()).ainvoke(self._INPUT))
+        assert "neg" in self._contents(result)
+
+    def test_sync_callable_object_router(self):
+        class Router:
+            def __call__(self, state, config):
+                return config["configurable"]["route"]
+
+        result = self._build(Router()).invoke(
+            self._INPUT, {"configurable": {"route": "pos"}}
+        )
+        assert "pos" in self._contents(result)
+
     def test_sync_router_runs_under_ainvoke(self):
         def router(state, config):
             return "pos"

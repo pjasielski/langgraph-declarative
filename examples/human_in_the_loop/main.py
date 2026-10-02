@@ -9,6 +9,7 @@ approval mechanism rather than about an LLM.
 from pathlib import Path
 
 from langgraph.checkpoint.memory import InMemorySaver
+from langgraph.graph import END
 from langgraph.types import Command, interrupt
 
 from langgraph_declarative import Registry, build_graph
@@ -44,7 +45,10 @@ def approval(state):
 
     if decision == "accept":
         return Command(goto="execute", update={"log": ["human approved"]})
-    return Command(goto="END", update={"log": ["human rejected — nothing written"]})
+    # In Python, use LangGraph's END constant. The string "END" is only
+    # translated inside YAML; Command(goto="END") would name a node that
+    # does not exist.
+    return Command(goto=END, update={"log": ["human rejected — nothing written"]})
 
 
 @registry.node("execute")

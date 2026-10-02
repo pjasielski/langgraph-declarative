@@ -26,8 +26,8 @@ classifiers = [
 ]
 dependencies = [
     "langgraph>=1.0",
-    "pyyaml>=6.0.1",
-    "pydantic>=2.8",
+    "pyyaml>=6.0.2",
+    "pydantic>=2.8.2",
 ]
 
 [project.optional-dependencies]
@@ -51,6 +51,21 @@ Issues = "https://github.com/pjasielski/langgraph-declarative/issues"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/langgraph_declarative"]
+
+# The sdist carries what is needed to build, test and learn the package — not
+# the repo's planning docs or local tooling (.claude/, .maestro/, docs/).
+[tool.hatch.build.targets.sdist]
+only-include = [
+    "src",
+    "tests",
+    "schema",
+    "examples",
+    "template",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE",
+    "pyproject.toml",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -322,7 +322,11 @@ class GraphBuilder:
                 )
             return result
 
-        if inspect.iscoroutinefunction(router_fn):
+        # An instance with ``async def __call__`` is async too, as LangGraph sees it.
+        is_async = inspect.iscoroutinefunction(router_fn) or (
+            inspect.iscoroutinefunction(getattr(router_fn, "__call__", None))
+        )
+        if is_async:
             @functools.wraps(router_fn)
             async def _validated_async_router(*args, **kwargs):
                 return _check(await router_fn(*args, **kwargs))

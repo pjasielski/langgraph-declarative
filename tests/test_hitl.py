@@ -11,6 +11,7 @@ from pathlib import Path
 
 import pytest
 from langgraph.checkpoint.memory import InMemorySaver
+from langgraph.graph import END
 from langgraph.types import Command, interrupt
 
 from langgraph_declarative import Registry, build_graph, draw_mermaid
@@ -47,7 +48,7 @@ def _hitl_registry(audit: dict):
         decision = interrupt({"question": "Approve this write?"})
         if decision == "accept":
             return Command(goto="execute", update={"log": ["approved"]})
-        return Command(goto="END", update={"log": ["rejected"]})
+        return Command(goto=END, update={"log": ["rejected"]})
 
     @reg.node("execute")
     def execute(state):
@@ -106,6 +107,18 @@ class TestApprovalGate:
         assert "written" not in audit, "reject must NOT produce the side effect"
         assert "rejected" in result["log"]
         assert "executed" not in result["log"]
+
+    def test_reject_routes_to_a_real_end(self, caplog):
+        """Command(goto=END) must name LangGraph's END, not the YAML string "END".
+
+        With goto="END" LangGraph logs "wrote to unknown channel branch:to:END,
+        ignoring it" and only ends the run because the node has no other edge.
+        """
+        graph = _build_hitl({}, InMemorySaver())
+        cfg = {"configurable": {"thread_id": "t-reject-end"}}
+        graph.invoke({"action": "write"}, cfg)
+        graph.invoke(Command(resume="reject"), cfg)
+        assert "unknown channel" not in caplog.text
 
     def test_read_path_runs_without_pausing(self):
         audit = {}
@@ -307,6 +320,22 @@ class TestDestinations:
         )
         assert "approval" in mermaid
         assert "execute" in mermaid
+
+    def test_start_is_not_a_valid_destination(self, tmp_path):
+        bad = tmp_path / "bad.yaml"
+        bad.write_text(
+            "nodes:\n  - {name: a, function: a, destinations: [START]}\n"
+            "edges:\n  - {source: START, target: a}\n",
+            encoding="utf-8",
+        )
+        reg = Registry()
+
+        @reg.node("a")
+        def a(state):
+            return {}
+
+        with pytest.raises(ConfigValidationError, match="destination: node 'START'"):
+            build_graph(bad, reg)
 
     def test_unknown_destination_rejected_with_suggestion(self, tmp_path):
         bad = tmp_path / "bad.yaml"

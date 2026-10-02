@@ -5,6 +5,13 @@ How to publish `langgraph-declarative` to PyPI. Publishing is done by
 uploads to PyPI through trusted publishing (OIDC), so no API token is stored. Running
 the workflow manually (`workflow_dispatch`) publishes to TestPyPI instead.
 
+**One-time setup (before the first automated release):** on PyPI, open the project →
+*Publishing* → add a GitHub trusted publisher: owner `pjasielski`, repository
+`langgraph-declarative`, workflow `release.yml`, environment `pypi`. In the GitHub
+repo, create the environment `pypi` (*Settings → Environments*). Do the same on
+TestPyPI with environment `testpypi` if you want dry runs. 0.2.0 was uploaded by hand,
+so this has not been exercised yet.
+
 Versions follow [SemVer](https://semver.org/) with 0.x rules: a minor bump (0.2 → 0.3)
 may contain breaking changes, and a patch bump may not. Milestone labels (M05, M06…)
 are not versions. Tags `vX.Y.Z` exist only for published releases.
@@ -17,7 +24,9 @@ are not versions. Tags `vX.Y.Z` exist only for published releases.
 - [ ] `pyproject.toml` → `version = "X.Y.Z"`; `uv lock` (updates the package's own entry)
 - [ ] `CHANGELOG.md`: `## Unreleased (X.Y.Z)` → `## vX.Y.Z (YYYY-MM-DD)`. Breaking
       changes come first, each with a **Migrate:** line
-- [ ] README: the "Since" note no longer says the version is unreleased
+- [ ] README and `examples/README.md`: no "unreleased" wording for this version.
+      The README is the PyPI page and cannot be changed after upload — do this
+      **before** tagging
 - [ ] `HANDOFF.md` status and `docs/04-plan/ROADMAP.md` milestone rows say released
 - [ ] Schema copies agree: `schema/workflow.schema.json` and
       `src/langgraph_declarative/workflow.schema.json` (enforced by `tests/test_json_schema.py`)
@@ -49,7 +58,8 @@ are not versions. Tags `vX.Y.Z` exist only for published releases.
 
 ## If something goes wrong
 
-- **CI fails after tagging:** delete the tag (`git push origin :refs/tags/vX.Y.Z`),
-  fix it, and tag again. Nothing has been published yet.
+- **`release.yml` fails before publishing** (tests, build, or the tag/version check):
+  nothing reached PyPI. Delete the GitHub release (`gh release delete vX.Y.Z`) and
+  the tag (`git push origin :refs/tags/vX.Y.Z`), fix, and release again.
 - **A bad build reached PyPI:** PyPI never accepts the same version twice. Yank it on
   PyPI (it stays installable when pinned) and release a patch version `X.Y.(Z+1)`.

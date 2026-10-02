@@ -304,15 +304,17 @@ def cross_validate(config: GraphConfig, registry: "Registry") -> None:  # noqa: 
                         format_not_found("node", t, sorted(node_names))
                     )
 
-    # Check Command(goto=...) destinations reference defined nodes or END
+    # Check Command(goto=...) destinations reference defined nodes or END.
+    # START is never a valid jump target.
+    destination_names = node_names | {"END"}
     for node in config.nodes:
         if not node.destinations:
             continue
         for dest in node.destinations:
-            if dest not in valid_names:
+            if dest not in destination_names:
                 raise ConfigValidationError(
                     f"Node '{node.name}' destination: "
-                    + format_not_found("node", dest, sorted(node_names))
+                    + format_not_found("node", dest, sorted(destination_names))
                 )
 
     # Check static interrupt points reference defined nodes.

@@ -22,20 +22,26 @@ changes, listed first — each turns a silent misbehaviour into an explicit erro
   origin and no `base_dir` raises `ConfigValidationError`. Absolute paths and
   `build_graph(path)` are unaffected. **Migrate:** pass `base_dir=` where you build
   in-memory or DB definitions that use relative paths.
+- **`subgraph:` in an imported file is relative to that file.** With `build_graph()`
+  too: a node pulled in through `imports:` used to resolve its `subgraph:` against
+  the *importing* file, so a library file had to spell paths from its consumer's
+  location. **Migrate:** write `subgraph:` paths in imported files relative to the
+  file they are in (the natural spelling — it is what failed before).
 - **Unknown YAML keys are rejected.** Every config model now forbids extra keys.
   Previously `tool:`, `temprature:` or `interupt_before:` validated cleanly and did
   nothing — with HITL, a typo in `interrupt_before` silently removed an approval
   gate. The error names the key and its location and suggests the closest valid
   key. `schema/workflow.schema.json` now sets `additionalProperties: false`.
   **Migrate:** remove or fix unknown keys; move free-text notes to the new
-  `description:` field.
-- **Dependency floors raised: `langgraph>=1.0`, `pydantic>=2.8`, `pyyaml>=6.0.1`.**
+  `description:` field. This includes top-level keys used only to hold YAML anchors
+  (e.g. `x-llm: &llm {...}`) — inline the anchor on its first real use instead.
+- **Dependency floors raised: `langgraph>=1.0`, `pydantic>=2.8.2`, `pyyaml>=6.0.2`.**
   0.2.0 declared `langgraph>=0.2`, but only the lockfile was ever tested. Measured
   with the full suite: LangGraph 0.2.0 cannot import it and 0.2.x/0.3.x fail the
-  HITL tests. LangGraph 1.0 itself needs Pydantic ≥2.7.4; 2.8 is the first release
-  with Python 3.13 wheels, and PyYAML 6.0 no longer builds on Python 3.12+. No
-  upper cap. CI now tests the locked, lowest and latest resolution on Python
-  3.10, 3.12 and 3.13.
+  HITL tests. LangGraph 1.0 itself needs Pydantic ≥2.7.4. Pydantic 2.8.2 and PyYAML
+  6.0.2 are the first releases with Python 3.13 wheels on Linux, macOS and Windows,
+  so no supported Python has to compile them from source. No upper cap. CI now
+  tests the locked, lowest and latest resolution on Python 3.10, 3.12 and 3.13.
 
 ### Fixed
 
@@ -44,9 +50,15 @@ changes, listed first — each turns a silent misbehaviour into an explicit erro
   validating wrapper called it synchronously with `state` only, so an async router
   failed with "returned coroutine" and a `config`-taking router with a `TypeError`.
   Dynamic routers (no `targets:`) were never affected.
-- **Imported subgraph nodes** — a node pulled in through `imports:` that declares
-  `subgraph:` now resolves the path next to its own file. Previously it resolved
-  against the importing file and failed with `Config file not found`.
+- **Imported subgraph nodes** — see *Breaking changes*; a path written relative to
+  the imported file used to fail with `Config file not found`.
+- **Mapped routers that are callable objects** with `async def __call__` are now
+  awaited instead of failing with "returned coroutine".
+- **`destinations: ["START"]`** is rejected at validation with a clear message,
+  instead of a raw LangGraph `ValueError` at compile time.
+- **HITL docs and example** use LangGraph's `END` constant in
+  `Command(goto=END)`. The string `"END"` is only translated inside YAML; in Python
+  it names a nonexistent node, which LangGraph logs and ignores.
 - **`SQLiteLoader.save()` under concurrent writers** — the next version is now
   allocated and inserted in one statement inside `BEGIN IMMEDIATE`, with a busy
   timeout. Previously two writers could both read `MAX(version)` and one failed

@@ -209,6 +209,7 @@ pauses by *persisting* state, so without one a pause cannot be resumed.
 
 ```python
 from langgraph.checkpoint.memory import InMemorySaver
+from langgraph.graph import END
 from langgraph.types import Command, interrupt
 
 @registry.node("approval")
@@ -216,7 +217,7 @@ def approval(state):
     decision = interrupt({"question": "Approve this write?"})
     if decision == "accept":
         return Command(goto="execute")
-    return Command(goto="END")
+    return Command(goto=END)       # LangGraph's END constant — "END" is YAML-only
 
 graph = build_graph("workflow.yaml", registry, checkpointer=InMemorySaver())
 
@@ -282,8 +283,8 @@ See [human_in_the_loop](https://github.com/pjasielski/langgraph-declarative/tree
 | `@registry.router("name")` | Register a router (returns a routing key or a list of `Send`) |
 | `@registry.tool("name")` | Register a tool for `tools:` binding |
 | `build_graph(path, registry, state_class=None, *, checkpointer=None, store=None)` | YAML file → compiled `CompiledStateGraph` |
-| `build_graph_from_db(source, registry, db_path, *, checkpointer=None, store=None, base_dir=None)` | DB-stored definition → compiled graph (`"flow"` or `"flow@2"`). `base_dir` is required if the definition uses relative `imports:` / `subgraph:` paths |
-| `draw_mermaid(path, registry, output_path=None)` | Compile and render a Mermaid diagram (`.md` → fenced block) |
+| `build_graph_from_db(source, registry, db_path, state_class=None, *, checkpointer=None, store=None, base_dir=None)` | DB-stored definition → compiled graph (`"flow"` or `"flow@2"`). `base_dir` is required if the definition uses relative `imports:` / `subgraph:` paths |
+| `draw_mermaid(path, registry, state_class=None, output_path=None)` | Compile and render a Mermaid diagram (`.md` → fenced block) |
 | `export_json_schema(output_path=None)` | Emit the JSON Schema for workflow YAML files |
 | `GraphBuilder(registry, state_class=None, *, checkpointer=None, store=None)` | Power-user class behind `build_graph()`; `.build(config, *, base_dir=None)` compiles an in-memory `GraphConfig` |
 | `SQLiteLoader(db_path)` | Save/load versioned definitions; implements the pluggable `Loader` protocol |
@@ -317,12 +318,12 @@ docs/                        # requirements, design, roadmap, reviews
 ## Requirements
 
 - Python 3.10+
-- LangGraph ≥ 1.0 · PyYAML ≥ 6.0.1 · Pydantic ≥ 2.8 (0.2.0 declared LangGraph ≥ 0.2)
+- LangGraph ≥ 1.0 · PyYAML ≥ 6.0.2 · Pydantic ≥ 2.8.2 (0.2.0 declared LangGraph ≥ 0.2)
 - Optional: `[anthropic]` / `[openai]` extras for `llm:` support
 
 ## Contributing
 
-Issues and pull requests welcome. Run the suite with `uv run pytest` before opening a PR.
+Issues and pull requests welcome. Run the suite with `uv run --extra dev pytest` before opening a PR.
 
 ## License
 

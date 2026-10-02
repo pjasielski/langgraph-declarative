@@ -9,7 +9,7 @@ description = "A declarative LangGraph agent — workflow topology in YAML, logi
 requires-python = ">=3.10"
 dependencies = [
     "langgraph>=1.0",
-    "langgraph-declarative",
+    "langgraph-declarative>=0.3",
 ]
 
 [tool.hatch.build.targets.wheel]
