@@ -61,6 +61,9 @@ changes, listed first — each turns a silent misbehaviour into an explicit erro
   readable with `importlib.resources`. 0.2.0 documented the schema but shipped it
   only in the sdist and the repo, not in the installed wheel.
 - **`py.typed`** — type checkers now use the package's annotations.
+- **Durable HITL test** — pause in one "process", resume in a fresh one that
+  rebuilds the graph from YAML with a new `SqliteSaver` on the same file; asserts
+  the approved write happens exactly once and a rejection writes nothing.
 
 - **`description:`** — optional free text on the graph, nodes and edges. It is the
   one documentation key that strict validation allows.

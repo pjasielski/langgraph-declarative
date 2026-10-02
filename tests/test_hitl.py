@@ -475,3 +475,67 @@ class TestStorePassthrough:
         graph.invoke({"messages": []})
 
         assert seen["store"] is store, "store must be injected into nodes"
+
+
+# ---------------------------------------------------------------------------
+# Durable restart: the pause survives a process boundary (M06.07)
+# ---------------------------------------------------------------------------
+
+
+class TestDurableRestart:
+    """``InMemorySaver`` proves the API; this proves recovery.
+
+    Each "process" gets a fresh registry, compiled graph, saver connection and
+    audit dict. Only the SQLite file on disk is shared — exactly what survives a
+    real restart. The pause happens in process 1, the resume in process 2.
+    """
+
+    @staticmethod
+    def _process(db_path: Path):
+        """Start a 'process': build from YAML with a new saver on the DB file."""
+        import sqlite3
+
+        from langgraph.checkpoint.sqlite import SqliteSaver
+
+        conn = sqlite3.connect(db_path, check_same_thread=False)
+        audit: dict = {}
+        graph = _build_hitl(audit, SqliteSaver(conn))
+        return graph, audit, conn
+
+    def _pause(self, db_path: Path, cfg: dict) -> None:
+        graph, audit, conn = self._process(db_path)
+        try:
+            out = graph.invoke({"action": "write"}, cfg)
+            assert "__interrupt__" in out, "write path must pause"
+            assert audit == {}, "nothing may be written before approval"
+        finally:
+            conn.close()
+        del graph  # the compiled graph and its saver die with the "process"
+
+    def test_accept_after_restart_writes_exactly_once(self, tmp_path):
+        db_path = tmp_path / "checkpoints.sqlite"
+        cfg = {"configurable": {"thread_id": "durable-accept"}}
+        self._pause(db_path, cfg)
+
+        graph, audit, conn = self._process(db_path)
+        try:
+            assert graph.get_state(cfg).next == ("approval",)
+            out = graph.invoke(Command(resume="accept"), cfg)
+            assert audit == {"written": True, "writes": 1}
+            assert out["log"] == ["agent", "approved", "executed"]
+            assert graph.get_state(cfg).next == ()
+        finally:
+            conn.close()
+
+    def test_reject_after_restart_writes_nothing(self, tmp_path):
+        db_path = tmp_path / "checkpoints.sqlite"
+        cfg = {"configurable": {"thread_id": "durable-reject"}}
+        self._pause(db_path, cfg)
+
+        graph, audit, conn = self._process(db_path)
+        try:
+            out = graph.invoke(Command(resume="reject"), cfg)
+            assert audit == {}
+            assert out["log"] == ["agent", "rejected"]
+        finally:
+            conn.close()

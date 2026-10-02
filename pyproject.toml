@@ -34,6 +34,7 @@ dependencies = [
 dev = [
     "pytest>=8.0",
     "jsonschema>=4.18",
+    "langgraph-checkpoint-sqlite>=2.0",
 ]
 openai = [
     "langchain-openai>=0.3",
