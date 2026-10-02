@@ -164,7 +164,7 @@ reproduction as a regression test.
 | M06.02 | **Definition origin: imported subgraphs resolve against their own file; explicit `base_dir=`** | Bug | P1 | M | — | ✅ done | [M06.02](tasks/M06.02-definition-origin.md) |
 | M06.03 | **Strict schema: reject unknown YAML keys; add explicit `description:`** | Bug (breaking) | P1 | S | — | ✅ done | [M06.03](tasks/M06.03-strict-schema.md) |
 | M06.04 | **State `default:` — deprecate, document as introspection-only** | Bug | P1 | S | — | ✅ done | [M06.04](tasks/M06.04-state-default-deprecation.md) |
-| M06.05 | **LangGraph `>=1.0` + CI version matrix** | Release | P1 | M | — | ☐ todo | [M06.05](tasks/M06.05-langgraph-compat-band.md) |
+| M06.05 | **LangGraph `>=1.0` + CI version matrix** | Release | P1 | M | — | ✅ done | [M06.05](tasks/M06.05-langgraph-compat-band.md) |
 | M06.06 | **Ship JSON Schema in the wheel, add `py.typed`, installed-wheel smoke test** | Release | P1 | S | M06.03 | ☐ todo | [M06.06](tasks/M06.06-packaging.md) |
 | M06.07 | **HITL durable-restart test with a persistent saver** | HITL | P1 | S | — | ☐ todo | [M06.07](tasks/M06.07-hitl-durable-restart-test.md) |
 | M06.08 | **Docs: trust boundary + host responsibilities for HITL** | Docs | P1 | S | — | ☐ todo | [M06.08](tasks/M06.08-trust-boundary-docs.md) |
@@ -264,7 +264,7 @@ YAML include/import shipped as task-023 (`imports:`) and is no longer a future i
 
 | Risk | Mitigation |
 |------|------------|
-| LangGraph API differences across versions | `langgraph>=1.0` from 0.3.0; CI tests the lowest and latest resolution (M06.05). Until then CI tests only the lockfile |
+| LangGraph API differences across versions | `langgraph>=1.0` from 0.3.0; CI tests the locked, lowest and latest resolution on Python 3.10/3.12/3.13 (M06.05) |
 | Pydantic v2 validator edge cases | Validators kept simple; invalid configs tested thoroughly |
 | Subgraph state scoping complexity | Shared registry + state sharing via common keys only |
 | LLM provider dependency sprawl | Providers are optional extras with lazy imports and a clear error when missing |

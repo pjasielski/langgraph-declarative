@@ -8,7 +8,7 @@ version = "0.1.0"
 description = "A declarative LangGraph agent — workflow topology in YAML, logic in Python"
 requires-python = ">=3.10"
 dependencies = [
-    "langgraph>=0.2",
+    "langgraph>=1.0",
     "langgraph-declarative",
 ]
 

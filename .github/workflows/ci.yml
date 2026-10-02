@@ -8,22 +8,34 @@ on:
 
 jobs:
   test:
+    name: test (py${{ matrix.python-version }}, ${{ matrix.deps }})
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
-        python-version: ["3.10", "3.12"]
+        python-version: ["3.10", "3.12", "3.13"]
+        # locked: the committed uv.lock
+        # lowest: every direct dependency at its declared floor (langgraph 1.0, …)
+        # latest: newest releases, ignoring the lock — catches upstream breakage
+        deps: [locked, lowest, latest]
+    env:
+      # Pin the interpreter explicitly; otherwise uv may pick the runner's default.
+      UV_PYTHON: ${{ matrix.python-version }}
 
     steps:
       - uses: actions/checkout@v4
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v3
+        uses: astral-sh/setup-uv@v6
 
-      - name: Set up Python ${{ matrix.python-version }}
-        run: uv python install ${{ matrix.python-version }}
+      - name: Run tests (locked)
+        if: matrix.deps == 'locked'
+        run: uv run --locked --extra dev pytest
 
-      - name: Run tests
-        run: uv run --extra dev pytest
+      - name: Run tests (lowest)
+        if: matrix.deps == 'lowest'
+        run: uv run --isolated --resolution lowest-direct --extra dev pytest
 
-      - name: Build package
-        run: uv build
+      - name: Run tests (latest)
+        if: matrix.deps == 'latest'
+        run: uv run --isolated --upgrade --extra dev pytest

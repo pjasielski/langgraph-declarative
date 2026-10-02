@@ -29,6 +29,13 @@ changes, listed first — each turns a silent misbehaviour into an explicit erro
   key. `schema/workflow.schema.json` now sets `additionalProperties: false`.
   **Migrate:** remove or fix unknown keys; move free-text notes to the new
   `description:` field.
+- **Dependency floors raised: `langgraph>=1.0`, `pydantic>=2.8`, `pyyaml>=6.0.1`.**
+  0.2.0 declared `langgraph>=0.2`, but only the lockfile was ever tested. Measured
+  with the full suite: LangGraph 0.2.0 cannot import it and 0.2.x/0.3.x fail the
+  HITL tests. LangGraph 1.0 itself needs Pydantic ≥2.7.4; 2.8 is the first release
+  with Python 3.13 wheels, and PyYAML 6.0 no longer builds on Python 3.12+. No
+  upper cap. CI now tests the locked, lowest and latest resolution on Python
+  3.10, 3.12 and 3.13.
 
 ### Fixed
 

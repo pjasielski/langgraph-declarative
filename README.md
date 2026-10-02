@@ -277,7 +277,7 @@ docs/                        # requirements, design, roadmap, reviews
 ## Requirements
 
 - Python 3.10+
-- LangGraph ≥ 0.2 · PyYAML ≥ 6.0 · Pydantic ≥ 2.0
+- LangGraph ≥ 1.0 · PyYAML ≥ 6.0.1 · Pydantic ≥ 2.8 (0.2.0 declared LangGraph ≥ 0.2)
 - Optional: `[anthropic]` / `[openai]` extras for `llm:` support
 
 ## Contributing

@@ -12,7 +12,7 @@ Always save substantive responses to a file in the session folder unless the res
 - **Framework:** Maestro (command prefix: `mae-`, aliases: `mex`/`mrq`/`mds`/`mpl`/`mdo`/`mrv`)
 - **What this is:** A Python library that compiles declarative workflow definitions into LangGraph graphs. Topology lives in YAML (or a database), node/router/tool logic stays in Python behind a decorator registry, and `build_graph()` returns a standard `CompiledStateGraph`.
 - **Current phase:** maintenance — 0.2.0 on PyPI; M05 (HITL) done, unreleased; next is M06 hardening → 0.3.0 release, then M07 (0.4.0)
-- **Stack:** Python 3.10+, LangGraph ≥0.2 (≥1.0 from 0.3.0), Pydantic v2, PyYAML, hatchling, pytest, uv
+- **Stack:** Python 3.10+, LangGraph ≥1.0, Pydantic ≥2.8, PyYAML ≥6.0.1, hatchling, pytest, uv
 - **Language:** English
 
 ## Conventions
