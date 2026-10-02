@@ -163,7 +163,7 @@ reproduction as a regression test.
 | M06.01 | **Mapped routers: preserve sync/async and `config` injection** | Bug | P1 | S | — | ✅ done | [M06.01](tasks/M06.01-router-wrapper-async-config.md) |
 | M06.02 | **Definition origin: imported subgraphs resolve against their own file; explicit `base_dir=`** | Bug | P1 | M | — | ✅ done | [M06.02](tasks/M06.02-definition-origin.md) |
 | M06.03 | **Strict schema: reject unknown YAML keys; add explicit `description:`** | Bug (breaking) | P1 | S | — | ✅ done | [M06.03](tasks/M06.03-strict-schema.md) |
-| M06.04 | **State `default:` — deprecate, document as introspection-only** | Bug | P1 | S | — | ☐ todo | [M06.04](tasks/M06.04-state-default-deprecation.md) |
+| M06.04 | **State `default:` — deprecate, document as introspection-only** | Bug | P1 | S | — | ✅ done | [M06.04](tasks/M06.04-state-default-deprecation.md) |
 | M06.05 | **LangGraph `>=1.0` + CI version matrix** | Release | P1 | M | — | ☐ todo | [M06.05](tasks/M06.05-langgraph-compat-band.md) |
 | M06.06 | **Ship JSON Schema in the wheel, add `py.typed`, installed-wheel smoke test** | Release | P1 | S | M06.03 | ☐ todo | [M06.06](tasks/M06.06-packaging.md) |
 | M06.07 | **HITL durable-restart test with a persistent saver** | HITL | P1 | S | — | ☐ todo | [M06.07](tasks/M06.07-hitl-durable-restart-test.md) |

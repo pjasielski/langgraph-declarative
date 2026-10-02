@@ -8,6 +8,9 @@ as a state annotation.
 from __future__ import annotations
 
 import operator
+import sys
+import warnings
+from pathlib import Path
 from typing import Annotated, Any, TypedDict
 
 from pydantic import field_validator
@@ -66,16 +69,46 @@ def _resolve_reducer(name: str):
     return None
 
 
+def _external_stacklevel() -> int:
+    """``stacklevel`` that attributes a warning to the first caller outside
+    this package, so a script calling ``build_graph()`` actually sees it
+    (``DeprecationWarning`` is only shown by default when raised in ``__main__``).
+    """
+    package_dir = str(Path(__file__).resolve().parent)
+    frame = sys._getframe(2)  # the caller of the function that warns
+    level = 2
+    while frame is not None and frame.f_code.co_filename.startswith(package_dir):
+        frame = frame.f_back
+        level += 1
+    return level
+
+
 def build_state_class(
     fields: list[StateFieldConfig], name: str = "DeclaredState"
 ) -> type:
     """Build a TypedDict state class from validated field configs.
 
     Fields with a reducer get an ``Annotated[type, reducer]`` annotation so
-    LangGraph merges updates instead of overwriting them. Declared defaults
-    are stored on ``__field_defaults__`` for introspection (LangGraph itself
-    does not consume defaults).
+    LangGraph merges updates instead of overwriting them.
+
+    Declared ``default:`` values are deprecated (ADR-010): LangGraph never
+    applies them, so a node reading the field still finds it missing. They are
+    kept on ``__field_defaults__`` for introspection only, and setting one
+    emits a ``DeprecationWarning``.
     """
+    defaulted = [f.name for f in fields if f.default is not None]
+    if defaulted:
+        names = ", ".join(f"'{n}'" for n in defaulted)
+        warnings.warn(
+            f"state field(s) {names} set 'default:', which is deprecated and has "
+            "no runtime effect — LangGraph does not apply state defaults, so the "
+            "field is absent until the graph input or a node writes it. "
+            "Initialise it there instead. The value remains available on "
+            "__field_defaults__ for introspection.",
+            DeprecationWarning,
+            stacklevel=_external_stacklevel(),
+        )
+
     annotations: dict[str, Any] = {}
     for field in fields:
         py_type = _TYPE_MAP[field.type]

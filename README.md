@@ -132,6 +132,8 @@ state:                              # declare the state schema (default: Message
   - name: "notes"
     type: "list[str]"
     reducer: "append"               # append | add_messages | replace (default)
+    # default: [...]                # deprecated (0.3.0): introspection-only, never
+                                    # applied at runtime — initialise in the graph input
 
 llm:                                # graph-level LLM default for opt-in nodes
   provider: "anthropic"             # anthropic | openai

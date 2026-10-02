@@ -41,6 +41,13 @@ changes, listed first — each turns a silent misbehaviour into an explicit erro
   `subgraph:` now resolves the path next to its own file. Previously it resolved
   against the importing file and failed with `Config file not found`.
 
+### Deprecated
+
+- **State `default:`** — setting it now emits a `DeprecationWarning`. LangGraph never
+  applied these values: a node reading a field declared with `default: 5` found it
+  missing. The value stays on `__field_defaults__` for introspection. Initialise
+  fields in the graph input or in a node instead.
+
 ### Added
 
 - **`description:`** — optional free text on the graph, nodes and edges. It is the

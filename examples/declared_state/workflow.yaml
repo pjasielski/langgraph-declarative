@@ -1,10 +1,14 @@
-# v1.1 feature: declare the state schema in YAML — no Python state class needed.
+# Since 0.2.0: declare the state schema in YAML — no Python state class needed.
 #
 # Each field has a name, a type, and an optional reducer:
 #   - reducer: append       → list updates are concatenated (operator.add),
 #                              required when parallel branches write the same field
 #   - reducer: add_messages → LangGraph's message merger (for chat states)
 #   - no reducer ("replace") → last write wins (LangGraph default)
+#
+# There is deliberately no `default:` here. LangGraph does not apply state
+# defaults, so `default:` is introspection-only and deprecated since 0.3.0 —
+# initialise fields in the graph input instead (see main.py).
 state:
   - name: "document"
     type: "str"
