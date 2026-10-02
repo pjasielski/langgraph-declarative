@@ -1,18 +1,17 @@
 # HANDOFF — langgraph-declarative
 
-**Status:** 0.2.0 on PyPI (tag `v0.2.0`). M05 (HITL) committed on `feat/hitl`, unreleased. Next: M06 → release 0.3.0
+**Status:** 0.2.0 on PyPI (tag `v0.2.0`). M05 (HITL) and M06.01–M06.09 (hardening) done on `feat/hitl`, version bumped to 0.3.0 — not yet pushed or published. Next: release 0.3.0 (rest of M06.10)
 **Phase:** maintenance
-**Updated:** 2026-10-01
+**Updated:** 2026-10-02
 
 ---
 
 ## Current Focus
 
-1. **M06 — Hardening for 0.3.0** (one session). Fixes from an external review, all
-   reproduced in session 013: mapped async/`config` routers, imported-subgraph path
-   resolution and `base_dir=`, strict YAML, `default:` deprecation, `langgraph>=1.0`
-   with a CI matrix, schema in the wheel, durable HITL test, trust-boundary docs,
-   SQLite versioning. Ends with the 0.3.0 release (M05 + M06 together).
+1. **Release 0.3.0 (M06.10)** — follow `docs/08-deploy/RELEASE.md` from step 2: push
+   `feat/hitl` and the `v0.2.0` tag, PR to `main`, green CI (first run of the new
+   matrix and package jobs), merge, tag `v0.3.0`, GitHub release → PyPI. Then set the
+   CHANGELOG date and README "unreleased" note, and mark M05/M06 released.
 2. **M07 — Capabilities for 0.4.0** (one session): node `params:`, side-effect-free
    `draw_mermaid()`, `build_from_loader()`, graph lint.
 3. **M08 — platform adapters**: demand-gated; do not start without a consumer.
@@ -72,7 +71,7 @@ User Code                          Library (langgraph_declarative)
 | `llm_factory.py` | `llm:` config → provider client, tool binding |
 | `errors.py` | Error types, `difflib` "did you mean?" suggestions |
 
-Stack: Python 3.10+, LangGraph ≥0.2 (→ ≥1.0 in 0.3.0), Pydantic v2, PyYAML, hatchling.
+Stack: Python 3.10+, LangGraph ≥1.0, Pydantic ≥2.8, PyYAML ≥6.0.1, hatchling.
 
 ## Where things are
 
@@ -98,3 +97,4 @@ Stack: Python 3.10+, LangGraph ≥0.2 (→ ≥1.0 in 0.3.0), Pydantic v2, PyYAML
 | 2026-07-26 | 0.2.0 published to PyPI |
 | 2026-08-12 | M05 human-in-the-loop implemented (188 tests); Maestro 0.4.0; single roadmap |
 | 2026-10-01 | External review verified; M06–M08 planned; HITL committed; `v0.2.0` tagged; feature tables switched to package versions |
+| 2026-10-02 | M06.01–M06.09 implemented (219 tests): router wrapper, `base_dir=`, strict schema, `default:` deprecation, LangGraph ≥1.0 + CI matrix, schema in wheel, durable HITL test, trust docs, atomic SQLite save. Version 0.3.0; `docs/08-deploy/RELEASE.md` added |

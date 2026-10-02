@@ -169,7 +169,7 @@ reproduction as a regression test.
 | M06.07 | **HITL durable-restart test with a persistent saver** | HITL | P1 | S | — | ✅ done | [M06.07](tasks/M06.07-hitl-durable-restart-test.md) |
 | M06.08 | **Docs: trust boundary + host responsibilities for HITL** | Docs | P1 | S | — | ✅ done | [M06.08](tasks/M06.08-trust-boundary-docs.md) |
 | M06.09 | **SQLite loader: atomic version allocation** | Bug | P2 | S | — | ✅ done | [M06.09](tasks/M06.09-sqlite-atomic-versioning.md) |
-| M06.10 | **Release 0.3.0: version bump, CHANGELOG, tag, GitHub release** | Release | P1 | S | all | ☐ todo | [M06.10](tasks/M06.10-release-0.3.0.md) |
+| M06.10 | **Release 0.3.0: version bump, CHANGELOG, tag, GitHub release** | Release | P1 | S | all | 🔄 in progress | [M06.10](tasks/M06.10-release-0.3.0.md) |
 
 **Done when:** every P1 item is green; CI passes on the full matrix; an installed
 wheel contains the schema; `v0.3.0` is tagged and on PyPI.

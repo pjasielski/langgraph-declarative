@@ -61,17 +61,6 @@ changes, listed first — each turns a silent misbehaviour into an explicit erro
 
 ### Added
 
-- **JSON Schema inside the package** — `langgraph_declarative/workflow.schema.json`,
-  readable with `importlib.resources`. 0.2.0 documented the schema but shipped it
-  only in the sdist and the repo, not in the installed wheel.
-- **`py.typed`** — type checkers now use the package's annotations.
-- **Durable HITL test** — pause in one "process", resume in a fresh one that
-  rebuilds the graph from YAML with a new `SqliteSaver` on the same file; asserts
-  the approved write happens exactly once and a rejection writes nothing.
-
-- **`description:`** — optional free text on the graph, nodes and edges. It is the
-  one documentation key that strict validation allows.
-
 - **Caller-supplied `checkpointer`** — `build_graph()`, `GraphBuilder()`, and
   `build_graph_from_db()` accept a keyword-only `checkpointer`, passed to
   `compile()`. This is what makes `interrupt()` / `Command(resume=...)` and
@@ -85,6 +74,14 @@ changes, listed first — each turns a silent misbehaviour into an explicit erro
 - **Optional `store`** — cross-thread memory, passed through to `compile()`.
 - **`human_in_the_loop` example** — a runnable approval gate showing the accept vs.
   reject side-effect difference.
+- **`base_dir=`** on `GraphBuilder.build()`, `GraphBuilder.draw_mermaid()` and
+  `build_graph_from_db()` — see *Breaking changes*.
+- **`description:`** — optional free text on the graph, nodes and edges. It is the
+  one documentation key that strict validation allows.
+- **JSON Schema inside the package** — `langgraph_declarative/workflow.schema.json`,
+  readable with `importlib.resources`. 0.2.0 documented the schema but shipped it
+  only in the sdist and the repo, not in the installed wheel.
+- **`py.typed`** — type checkers now use the package's annotations.
 
 ### Documentation
 
@@ -106,6 +103,10 @@ changes, listed first — each turns a silent misbehaviour into an explicit erro
   deployed.
 - **Subgraphs do not receive their own checkpointer** — the parent's already covers
   interrupts raised inside them (verified against LangGraph 1.2.2).
+- **HITL survives a restart** — a test pauses in one "process" and resumes in a
+  fresh one that rebuilds the graph from YAML with a new `SqliteSaver` on the same
+  file; the approved write happens exactly once and a rejection writes nothing.
+- **Release process** — see [docs/08-deploy/RELEASE.md](docs/08-deploy/RELEASE.md).
 
 ## v0.2.0 (2026-07-26)
 
