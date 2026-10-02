@@ -1,4 +1,4 @@
-# v2 features: LLM configuration and tool binding in YAML.
+# Since 0.2.0: LLM configuration and tool binding in YAML.
 #
 # Graph-level `llm:` is the default for every node that opts in (a node
 # function opts in by accepting an `llm` keyword parameter). A node-level

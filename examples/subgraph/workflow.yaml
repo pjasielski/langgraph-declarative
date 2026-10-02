@@ -1,4 +1,4 @@
-# v2 feature: subgraph composition — a node can embed another YAML workflow.
+# Since 0.2.0: subgraph composition — a node can embed another YAML workflow.
 #
 # `subgraph:` takes a path relative to THIS file. The child is compiled
 # recursively and added as a single node. A node has either `function:` or

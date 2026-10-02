@@ -1,6 +1,6 @@
 # yaml-language-server: $schema=../../schema/workflow.schema.json
 #
-# The modeline above is the v1.1 JSON Schema feature in action: IDEs with a
+# The modeline above is the JSON Schema feature (since 0.2.0) in action: IDEs with a
 # YAML language server validate this file and offer autocomplete as you type.
 # The schema file is generated with export_json_schema() — see main.py.
 state:

@@ -51,7 +51,7 @@ All examples run offline except `llm_and_tools`, which calls a real LLM API (and
 
 ---
 
-## v1 — core
+## Core
 
 ### quickstart — Linear graph (0.1.0)
 
@@ -85,7 +85,7 @@ START → classifier → (intent_router) → handle_question | handle_complaint 
 
 - **Files:** [workflow.yaml](conditional_routing/workflow.yaml), [main.py](conditional_routing/main.py)
 - **Demonstrates:** `@registry.router()`, `path:` + `targets:` for conditional edges
-- **Since v1.1:** when the routing decision is just "look at one state field", `match:` routing does the same job without a Python router — see [match_routing](match_routing/).
+- **Since 0.2.0:** when the routing decision is just "look at one state field", `match:` routing does the same job without a Python router — see [match_routing](match_routing/).
 
 ### dynamic_routing — Send-based fan-out (0.1.0)
 
@@ -97,7 +97,7 @@ START → task_splitter → (dispatch_tasks) → worker × N → END
 
 - **Files:** [workflow.yaml](dynamic_routing/workflow.yaml), [main.py](dynamic_routing/main.py)
 - **Demonstrates:** `path:` without `targets`, router returning `list[Send]`, custom `TypedDict` state, runtime-determined parallelism
-- **Since v1.1:** the `TaskState` TypedDict could be declared in YAML instead (`state:` with `reducer: append`).
+- **Since 0.2.0:** the `TaskState` TypedDict could be declared in YAML instead (`state:` with `reducer: append`).
 
 ### custom_state — Non-MessagesState workflow (0.1.0)
 
@@ -110,11 +110,11 @@ START → ingest → validate → (validation_router) → transform → END
 
 - **Files:** [workflow.yaml](custom_state/workflow.yaml), [main.py](custom_state/main.py)
 - **Demonstrates:** `state_class=PipelineState` parameter, conditional routing for retry logic, non-chat workflows
-- **Since v1.1:** the same schema can be declared in YAML — see [declared_state](declared_state/). `state_class=` remains supported; note that a YAML `state:` section takes precedence over it (with a `UserWarning`).
+- **Since 0.2.0:** the same schema can be declared in YAML — see [declared_state](declared_state/). `state_class=` remains supported; note that a YAML `state:` section takes precedence over it (with a `UserWarning`).
 
 ---
 
-## v1.1 — extensions
+## Extensions
 
 ### declared_state — State schema in YAML (0.2.0)
 
@@ -147,7 +147,7 @@ Developer-experience features: render any workflow as a Mermaid diagram and expo
 
 ---
 
-## v2 — composition & integration
+## Composition & integration
 
 ### subgraph — Embed a workflow in a node (0.2.0)
 
