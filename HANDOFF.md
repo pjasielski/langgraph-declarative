@@ -1,6 +1,6 @@
 # HANDOFF — langgraph-declarative
 
-**Status:** 0.2.0 on PyPI (tag `v0.2.0`). M05 (HITL) and M06.01–M06.09 (hardening) done on `feat/hitl`, version bumped to 0.3.0 — not yet pushed or published. Next: release 0.3.0 (rest of M06.10)
+**Status:** 0.3.0 on PyPI (tag `v0.3.0`, 2026-10-02) — M05 human-in-the-loop + M06 hardening. Next: M07 → 0.4.0
 **Phase:** maintenance
 **Updated:** 2026-10-02
 
@@ -8,16 +8,9 @@
 
 ## Current Focus
 
-1. **Release 0.3.0 (M06.10)** — follow `docs/08-deploy/RELEASE.md`. Before tagging:
-   date the CHANGELOG heading and remove the "unreleased" wording from README and
-   `examples/README.md` (the README becomes the PyPI page and cannot be changed after
-   upload). Then push `feat/hitl` and the `v0.2.0` tag, PR to `main`, green CI (first
-   run of the new matrix and package jobs), merge, tag `v0.3.0`, GitHub release →
-   PyPI. Automated publishing needs a one-time PyPI trusted-publisher setup (see
-   RELEASE.md); 0.2.0 was uploaded by hand.
-2. **M07 — Capabilities for 0.4.0** (one session): node `params:`, side-effect-free
+1. **M07 — Capabilities for 0.4.0** (one session): node `params:`, side-effect-free
    `draw_mermaid()`, `build_from_loader()`, graph lint.
-3. **M08 — platform adapters**: demand-gated; do not start without a consumer.
+2. **M08 — platform adapters**: demand-gated; do not start without a consumer.
 
 Plan and evidence: `.sessions/013-codex-review/02-review-assessment-and-plan.md`.
 Roadmap: `docs/04-plan/ROADMAP.md`.
@@ -100,4 +93,5 @@ Stack: Python 3.10+, LangGraph ≥1.0, Pydantic ≥2.8.2, PyYAML ≥6.0.2, hatch
 | 2026-07-26 | 0.2.0 published to PyPI |
 | 2026-08-12 | M05 human-in-the-loop implemented (188 tests); Maestro 0.4.0; single roadmap |
 | 2026-10-01 | External review verified; M06–M08 planned; HITL committed; `v0.2.0` tagged; feature tables switched to package versions |
+| 2026-10-02 | 0.3.0 released: PR #2 merged, tag `v0.3.0`, first automated PyPI publish via trusted publishing; pre-release review fixes in `ac030b0` |
 | 2026-10-02 | M06.01–M06.09 implemented (219 tests): router wrapper, `base_dir=`, strict schema, `default:` deprecation, LangGraph ≥1.0 + CI matrix, schema in wheel, durable HITL test, trust docs, atomic SQLite save. Version 0.3.0; `docs/08-deploy/RELEASE.md` added |

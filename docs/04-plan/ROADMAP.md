@@ -1,6 +1,6 @@
 # ROADMAP — langgraph-declarative
 
-**Version:** 0.2.0 (released, tag `v0.2.0`) → 0.3.0 (M05 + M06) → 0.4.0 (M07)
+**Version:** 0.3.0 (released 2026-10-02, tag `v0.3.0`) → 0.4.0 (M07)
 **Updated:** 2026-10-01
 **Sources:** `.sessions/11-hitl/` (HITL handoff from the agentic-testing project), `.sessions/013-codex-review/` (external review, verified), docs/06-review/, prior delivery sessions
 
@@ -29,14 +29,13 @@ task index all live here.
 | M02 | Examples & hardening | Edge-type example coverage, public roadmap, edge-case tests | 0.1.0 | ✅ done |
 | M03 | Declarative surface | State in YAML, match routing, Mermaid, JSON Schema | 0.2.0 | ✅ done |
 | M04 | Composition & config | Subgraphs, imports, LLM/tools, DB source, template | 0.2.0 | ✅ done |
-| M05 | Human-in-the-loop | Checkpointer, destinations, static interrupts, store | 0.3.0 | ✅ done (unreleased) |
-| M06 | Hardening | Correctness fixes, strict schema, compatibility band, packaging, release | 0.3.0 | 🔄 in progress |
+| M05 | Human-in-the-loop | Checkpointer, destinations, static interrupts, store | 0.3.0 | ✅ released |
+| M06 | Hardening | Correctness fixes, strict schema, compatibility band, packaging, release | 0.3.0 | ✅ released |
 | M07 | Capabilities | Node params, side-effect-free diagrams, loader pipeline, graph lint | 0.4.0 | ☐ todo |
 | M08 | Embedding & platform adapters | Neutral IR, restricted mode, digests — **demand-gated** | — | ⏳ gated |
 
-M01–M02 were the internal 0.1.0; M01–M04 shipped publicly as `v0.2.0`. M05 is done
-but unreleased (committed on `feat/hitl`): 0.3.0 ships M05 and M06
-together, so the HITL feature does not land on top of known correctness bugs and an
+M01–M02 were the internal 0.1.0; M01–M04 shipped publicly as `v0.2.0`. 0.3.0
+(2026-10-02) shipped M05 and M06 together, so the HITL feature does not land on top of known correctness bugs and an
 untested dependency range. The v1 / v1.1 / v2 labels used in earlier docs were
 milestone names, not package versions — see [CHANGELOG.md](../../CHANGELOG.md).
 
@@ -103,6 +102,8 @@ milestone names, not package versions — see [CHANGELOG.md](../../CHANGELOG.md)
 
 ## Milestone M05: Human-in-the-loop (0.3.0)
 
+✅ Shipped in 0.3.0 (2026-10-02).
+
 Make approval gates, pauses for input, and resumable runs expressible in YAML — the
 one capability class the library could not express at all.
 
@@ -152,6 +153,8 @@ is the previous behaviour, and the new YAML fields are all optional.
 
 ## Milestone M06: Hardening (0.3.0)
 
+✅ Shipped in 0.3.0 (2026-10-02).
+
 Fix what an external review found (verified and reproduced in session 013) before
 anything else is released. Every P1 bug here was reproduced. Each fix lands with its
 reproduction as a regression test.
@@ -169,7 +172,7 @@ reproduction as a regression test.
 | M06.07 | **HITL durable-restart test with a persistent saver** | HITL | P1 | S | — | ✅ done | [M06.07](tasks/M06.07-hitl-durable-restart-test.md) |
 | M06.08 | **Docs: trust boundary + host responsibilities for HITL** | Docs | P1 | S | — | ✅ done | [M06.08](tasks/M06.08-trust-boundary-docs.md) |
 | M06.09 | **SQLite loader: atomic version allocation** | Bug | P2 | S | — | ✅ done | [M06.09](tasks/M06.09-sqlite-atomic-versioning.md) |
-| M06.10 | **Release 0.3.0: version bump, CHANGELOG, tag, GitHub release** | Release | P1 | S | all | 🔄 in progress | [M06.10](tasks/M06.10-release-0.3.0.md) |
+| M06.10 | **Release 0.3.0: version bump, CHANGELOG, tag, GitHub release** | Release | P1 | S | all | ✅ done | [M06.10](tasks/M06.10-release-0.3.0.md) |
 
 **Done when:** every P1 item is green; CI passes on the full matrix; an installed
 wheel contains the schema; `v0.3.0` is tagged and on PyPI.
