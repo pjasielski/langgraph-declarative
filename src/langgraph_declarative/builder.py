@@ -275,9 +275,14 @@ class GraphBuilder:
     def _wrap_mapped_router(
         self, router_fn: Callable, router_name: str, allowed_keys: set[str]
     ) -> Callable:
-        """Wrap a router function to validate its return value against allowed keys."""
-        def _validated_router(state):
-            result = router_fn(state)
+        """Wrap a router function to validate its return value against allowed keys.
+
+        The wrapper must be invisible to LangGraph: ``functools.wraps`` exposes
+        the router's own signature (via ``__wrapped__``) so injected parameters
+        such as ``config`` are still passed, and coroutine routers get an
+        ``async`` wrapper so LangGraph awaits them.
+        """
+        def _check(result):
             if not isinstance(result, str):
                 raise ConfigValidationError(
                     f"Router '{router_name}' returned {type(result).__name__}, "
@@ -290,6 +295,16 @@ class GraphBuilder:
                     f"Allowed keys: {sorted_keys}."
                 )
             return result
+
+        if inspect.iscoroutinefunction(router_fn):
+            @functools.wraps(router_fn)
+            async def _validated_async_router(*args, **kwargs):
+                return _check(await router_fn(*args, **kwargs))
+            return _validated_async_router
+
+        @functools.wraps(router_fn)
+        def _validated_router(*args, **kwargs):
+            return _check(router_fn(*args, **kwargs))
         return _validated_router
 
     def _resolve_sentinel(self, name: str) -> str:

@@ -30,7 +30,7 @@ task index all live here.
 | M03 | Declarative surface | State in YAML, match routing, Mermaid, JSON Schema | 0.2.0 | ✅ done |
 | M04 | Composition & config | Subgraphs, imports, LLM/tools, DB source, template | 0.2.0 | ✅ done |
 | M05 | Human-in-the-loop | Checkpointer, destinations, static interrupts, store | 0.3.0 | ✅ done (unreleased) |
-| M06 | Hardening | Correctness fixes, strict schema, compatibility band, packaging, release | 0.3.0 | ☐ todo |
+| M06 | Hardening | Correctness fixes, strict schema, compatibility band, packaging, release | 0.3.0 | 🔄 in progress |
 | M07 | Capabilities | Node params, side-effect-free diagrams, loader pipeline, graph lint | 0.4.0 | ☐ todo |
 | M08 | Embedding & platform adapters | Neutral IR, restricted mode, digests — **demand-gated** | — | ⏳ gated |
 
@@ -160,7 +160,7 @@ reproduction as a regression test.
 
 | # | Item | Scope | Priority | Effort | Depends | Status | Task |
 |---|------|-------|----------|--------|---------|--------|------|
-| M06.01 | **Mapped routers: preserve sync/async and `config` injection** | Bug | P1 | S | — | ☐ todo | [M06.01](tasks/M06.01-router-wrapper-async-config.md) |
+| M06.01 | **Mapped routers: preserve sync/async and `config` injection** | Bug | P1 | S | — | ✅ done | [M06.01](tasks/M06.01-router-wrapper-async-config.md) |
 | M06.02 | **Definition origin: imported subgraphs resolve against their own file; explicit `base_dir=`** | Bug | P1 | M | — | ☐ todo | [M06.02](tasks/M06.02-definition-origin.md) |
 | M06.03 | **Strict schema: reject unknown YAML keys; add explicit `description:`** | Bug (breaking) | P1 | S | — | ☐ todo | [M06.03](tasks/M06.03-strict-schema.md) |
 | M06.04 | **State `default:` — deprecate, document as introspection-only** | Bug | P1 | S | — | ☐ todo | [M06.04](tasks/M06.04-state-default-deprecation.md) |

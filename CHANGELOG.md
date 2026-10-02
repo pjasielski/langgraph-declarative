@@ -2,15 +2,25 @@
 
 ## Unreleased (0.3.0)
 
-Human-in-the-loop (milestone M05). The 0.3.0 release also carries the M06 hardening
-fixes — see [the roadmap](docs/04-plan/ROADMAP.md).
+Human-in-the-loop (milestone M05) and hardening (milestone M06) — see
+[the roadmap](docs/04-plan/ROADMAP.md).
 
 Approval gates, pauses for input, and resumable runs. Previously the library could
 not express these at all: nothing on the call chain reached `graph.compile()`, so
 `interrupt()` had nowhere to persist state and a pause could not be resumed.
 
-Every change is additive and backward compatible — omitting the new arguments and
-YAML fields compiles exactly as before.
+The HITL additions are backward compatible. The hardening fixes include breaking
+changes, listed first — each turns a silent misbehaviour into an explicit error.
+
+### Breaking changes
+
+### Fixed
+
+- **Mapped routers keep their signature** — a router used with `targets:` can now be
+  `async def` and can take LangGraph's injected `config` parameter. Previously the
+  validating wrapper called it synchronously with `state` only, so an async router
+  failed with "returned coroutine" and a `config`-taking router with a `TypeError`.
+  Dynamic routers (no `targets:`) were never affected.
 
 ### Added
 

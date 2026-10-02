@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
+import asyncio
 from pathlib import Path
 from typing import Annotated, TypedDict
 
 import operator
 
 import pytest
+from langchain_core.runnables import RunnableConfig
 from langgraph.graph import MessagesState, END, START
 from langgraph.graph.state import CompiledStateGraph
 
@@ -283,3 +285,85 @@ class TestMappedRoutingValidation:
         result = graph.invoke({"messages": [{"role": "user", "content": "hi"}]})
         contents = [m.content for m in result["messages"]]
         assert "pos" in contents
+
+
+class TestMappedRouterSignatures:
+    """M06.01: the validating wrapper must not change how LangGraph calls a router."""
+
+    _INPUT = {"messages": [{"role": "user", "content": "hi"}]}
+
+    def _build(self, router_fn):
+        return TestMappedRoutingValidation()._build_conditional_graph(router_fn)
+
+    @staticmethod
+    def _contents(result):
+        return [m.content for m in result["messages"]]
+
+    def test_sync_router(self):
+        def router(state):
+            return "neg"
+
+        result = self._build(router).invoke(self._INPUT)
+        assert "neg" in self._contents(result)
+
+    def test_async_router(self):
+        async def router(state):
+            return "neg"
+
+        result = asyncio.run(self._build(router).ainvoke(self._INPUT))
+        assert "neg" in self._contents(result)
+
+    def test_sync_router_receives_config(self):
+        seen = {}
+
+        def router(state, config: RunnableConfig):
+            seen["route"] = config["configurable"]["route"]
+            return config["configurable"]["route"]
+
+        result = self._build(router).invoke(
+            self._INPUT, {"configurable": {"route": "neg"}}
+        )
+        assert seen == {"route": "neg"}
+        assert "neg" in self._contents(result)
+
+    def test_untyped_config_parameter_is_injected(self):
+        def router(state, config):
+            return config["configurable"]["route"]
+
+        result = self._build(router).invoke(
+            self._INPUT, {"configurable": {"route": "pos"}}
+        )
+        assert "pos" in self._contents(result)
+
+    def test_async_router_receives_config(self):
+        async def router(state, config: RunnableConfig):
+            return config["configurable"]["route"]
+
+        graph = self._build(router)
+        result = asyncio.run(
+            graph.ainvoke(self._INPUT, {"configurable": {"route": "neg"}})
+        )
+        assert "neg" in self._contents(result)
+
+    def test_async_router_unmapped_key_raises(self):
+        async def router(state):
+            return "nope"
+
+        graph = self._build(router)
+        with pytest.raises(ConfigValidationError, match="unmapped key 'nope'"):
+            asyncio.run(graph.ainvoke(self._INPUT))
+
+    def test_async_router_non_string_raises(self):
+        async def router(state):
+            return 42
+
+        graph = self._build(router)
+        with pytest.raises(ConfigValidationError, match="returned int, expected str"):
+            asyncio.run(graph.ainvoke(self._INPUT))
+
+    def test_sync_router_runs_under_ainvoke(self):
+        def router(state, config):
+            return "pos"
+
+        result = asyncio.run(self._build(router).ainvoke(self._INPUT))
+        assert "pos" in self._contents(result)
