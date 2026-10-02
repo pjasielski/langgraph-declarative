@@ -125,6 +125,7 @@ def build_graph_from_db(
     *,
     checkpointer=None,
     store=None,
+    base_dir: str | Path | None = None,
 ):
     """One-line graph compilation from a database-stored definition.
 
@@ -136,6 +137,10 @@ def build_graph_from_db(
         checkpointer: Persistence backend enabling ``interrupt()`` / resume.
             Not defaulted — see ``build_graph()``.
         store: Cross-thread memory backend (optional).
+        base_dir: Directory that relative ``imports:`` / ``subgraph:`` paths in
+            the stored definition resolve against. Required when the definition
+            uses relative paths — a stored definition has no file location, so
+            the library will not guess one from the working directory.
     """
     from langgraph_declarative.builder import GraphBuilder
     from langgraph_declarative.schema import validate_config
@@ -148,4 +153,4 @@ def build_graph_from_db(
         checkpointer=checkpointer,
         store=store,
     )
-    return builder.build(config)
+    return builder.build(config, base_dir=base_dir)

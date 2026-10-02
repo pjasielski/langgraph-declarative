@@ -77,16 +77,32 @@ class GraphBuilder:
 
     # -- public API --
 
-    def build(self, config: GraphConfig) -> CompiledStateGraph:
-        """Build and compile a StateGraph from a validated config."""
-        return self._build(config, base_dir=Path.cwd(), visiting=())
+    def build(
+        self, config: GraphConfig, *, base_dir: str | Path | None = None
+    ) -> CompiledStateGraph:
+        """Build and compile a StateGraph from a validated config.
+
+        Args:
+            config: A validated graph configuration.
+            base_dir: Directory that relative ``imports:`` / ``subgraph:`` paths
+                resolve against. An in-memory config has no file of its own, so
+                a relative path without ``base_dir`` raises
+                ``ConfigValidationError`` instead of silently depending on the
+                process working directory (ADR-009).
+        """
+        resolved = Path(base_dir).resolve() if base_dir is not None else None
+        return self._build(config, base_dir=resolved, visiting=())
 
     def build_from_file(self, path: str | Path) -> CompiledStateGraph:
         """Load YAML, validate, cross-validate, and build. Full pipeline."""
         return self._build_from_file(Path(path), visiting=())
 
     def draw_mermaid(
-        self, config: GraphConfig, output_path: str | Path | None = None
+        self,
+        config: GraphConfig,
+        output_path: str | Path | None = None,
+        *,
+        base_dir: str | Path | None = None,
     ) -> str:
         """Compile the config and return its Mermaid diagram source.
 
@@ -94,8 +110,9 @@ class GraphBuilder:
             config: A validated graph configuration.
             output_path: If given, also write the diagram to this file
                 (``.md`` gets a fenced code block, anything else raw Mermaid).
+            base_dir: Directory for relative paths — see :meth:`build`.
         """
-        compiled = self.build(config)
+        compiled = self.build(config, base_dir=base_dir)
         return _render_mermaid(compiled, output_path)
 
     # -- pipeline internals --
@@ -112,13 +129,16 @@ class GraphBuilder:
         return self._build(config, resolved.parent, (*visiting, resolved))
 
     def _build(
-        self, config: GraphConfig, base_dir: Path, visiting: tuple[Path, ...]
+        self,
+        config: GraphConfig,
+        base_dir: Path | None,
+        visiting: tuple[Path, ...],
     ) -> CompiledStateGraph:
-        config = _resolve_imports(config, base_dir)
+        config, origins = _resolve_imports(config, base_dir)
         cross_validate(config, self.registry)
 
         graph = StateGraph(self._resolve_state_class(config))
-        self._add_nodes(graph, config, base_dir, visiting)
+        self._add_nodes(graph, config, origins, visiting)
         self._add_edges(graph, config.edges)
 
         # Only the top-level compile takes persistence. Nested subgraph compiles
@@ -155,17 +175,23 @@ class GraphBuilder:
         self,
         graph: StateGraph,
         config: GraphConfig,
-        base_dir: Path,
+        origins: dict[str, Path | None],
         visiting: tuple[Path, ...],
     ) -> None:
-        """Register all node functions (or compiled subgraphs) on the graph."""
+        """Register all node functions (or compiled subgraphs) on the graph.
+
+        *origins* maps each node to the directory of the file that declared it,
+        so an imported node's ``subgraph:`` resolves next to its own file.
+        """
         for node in config.nodes:
             if node.subgraph is not None:
                 # Subgraphs compile without persistence — the parent owns it.
                 sub_builder = self._subgraph_builder()
-                compiled = sub_builder._build_from_file(
-                    base_dir / node.subgraph, visiting
+                path = _resolve_relative(
+                    node.subgraph, origins[node.name],
+                    f"Node '{node.name}' subgraph",
                 )
+                compiled = sub_builder._build_from_file(path, visiting)
                 graph.add_node(node.name, compiled, **_node_kwargs(node))
             else:
                 fn = self.registry.get_node(node.function)
@@ -375,30 +401,56 @@ def _make_match_router(field: str, allowed_keys: set[str]) -> Callable:
 # -- cross-file imports (task-023) --
 
 
+def _resolve_relative(path: str, base_dir: Path | None, what: str) -> Path:
+    """Resolve a path from a definition against the directory that declared it.
+
+    Absolute paths need no origin. A relative path from a definition with no
+    file origin (in-memory or database) and no explicit ``base_dir`` is an
+    error rather than a silent lookup in the process working directory.
+    """
+    candidate = Path(path)
+    if candidate.is_absolute():
+        return candidate.resolve()
+    if base_dir is None:
+        raise ConfigValidationError(
+            f"{what} '{path}' is a relative path, but the definition has no file "
+            "origin to resolve it against. Pass base_dir= to build() / "
+            "build_graph_from_db(), or use an absolute path."
+        )
+    return (base_dir / candidate).resolve()
+
+
 def _resolve_imports(
-    config: GraphConfig, base_dir: Path, chain: tuple[Path, ...] = ()
-) -> GraphConfig:
+    config: GraphConfig, base_dir: Path | None, chain: tuple[Path, ...] = ()
+) -> tuple[GraphConfig, dict[str, Path | None]]:
     """Merge node definitions from imported YAML files into *config*.
 
     Imports are resolved recursively (imported files may import too), relative
     to the importing file. Circular imports and name collisions raise
     ``ConfigValidationError``.
+
+    Returns the merged config plus a ``{node_name: origin_dir}`` map: the
+    directory of the file that declared each node. The origin is kept out of
+    the Pydantic schema because it is not user-facing YAML.
     """
+    origins: dict[str, Path | None] = {n.name: base_dir for n in config.nodes}
     if not config.imports:
-        return config
+        return config, origins
 
     merged_nodes = list(config.nodes)
     existing = {n.name for n in merged_nodes}
 
     for imp in config.imports:
-        resolved = (base_dir / imp.file).resolve()
+        resolved = _resolve_relative(imp.file, base_dir, "Import")
         if resolved in chain:
             cycle = " -> ".join(p.name for p in (*chain, resolved))
             raise ConfigValidationError(f"Circular import: {cycle}")
 
         raw = load_yaml(resolved)
         imported = validate_config(raw)
-        imported = _resolve_imports(imported, resolved.parent, (*chain, resolved))
+        imported, imported_origins = _resolve_imports(
+            imported, resolved.parent, (*chain, resolved)
+        )
 
         available = {n.name: n for n in imported.nodes}
         wanted = imp.nodes if imp.nodes is not None else list(available)
@@ -416,9 +468,11 @@ def _resolve_imports(
                     "with an existing node"
                 )
             merged_nodes.append(available[name])
+            origins[name] = imported_origins[name]
             existing.add(name)
 
-    return config.model_copy(update={"nodes": merged_nodes, "imports": None})
+    merged = config.model_copy(update={"nodes": merged_nodes, "imports": None})
+    return merged, origins
 
 
 # -- mermaid rendering (task-015) --

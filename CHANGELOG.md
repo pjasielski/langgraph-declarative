@@ -14,6 +14,15 @@ changes, listed first — each turns a silent misbehaviour into an explicit erro
 
 ### Breaking changes
 
+- **Relative paths resolve against the declaring file; no more working-directory
+  fallback.** `GraphBuilder.build(config)` and `build_graph_from_db()` used to resolve
+  relative `imports:` / `subgraph:` paths against the process working directory, so
+  the same stored definition behaved differently depending on where the process
+  started. Both now take a keyword `base_dir=`, and a relative path with no file
+  origin and no `base_dir` raises `ConfigValidationError`. Absolute paths and
+  `build_graph(path)` are unaffected. **Migrate:** pass `base_dir=` where you build
+  in-memory or DB definitions that use relative paths.
+
 ### Fixed
 
 - **Mapped routers keep their signature** — a router used with `targets:` can now be
@@ -21,6 +30,9 @@ changes, listed first — each turns a silent misbehaviour into an explicit erro
   validating wrapper called it synchronously with `state` only, so an async router
   failed with "returned coroutine" and a `config`-taking router with a `TypeError`.
   Dynamic routers (no `targets:`) were never affected.
+- **Imported subgraph nodes** — a node pulled in through `imports:` that declares
+  `subgraph:` now resolves the path next to its own file. Previously it resolved
+  against the importing file and failed with `Config file not found`.
 
 ### Added
 

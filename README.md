@@ -133,7 +133,7 @@ llm:                                # graph-level LLM default for opt-in nodes
   model: "claude-opus-4-8"
 
 imports:                            # merge node declarations from other files
-  - file: "shared_nodes.yaml"
+  - file: "shared_nodes.yaml"       # relative to this file
     nodes: ["error_handler"]        # omit to import all nodes
 
 interrupt_before: ["approval"]      # pause before these nodes run (needs a checkpointer)
@@ -143,7 +143,7 @@ nodes:
   - name: "classifier"
     function: "classify"            # registered via @registry.node()
   - name: "research"
-    subgraph: "child.yaml"          # embed another workflow (function XOR subgraph)
+    subgraph: "child.yaml"          # embed another workflow, relative to the declaring file
   - name: "agent"
     function: "agent_fn"            # function must accept an `llm` parameter to opt in
     llm: { model: "claude-haiku-4-5" }  # node-level override, merged over graph llm
@@ -234,10 +234,10 @@ See [human_in_the_loop](https://github.com/pjasielski/langgraph-declarative/tree
 | `@registry.router("name")` | Register a router (returns a routing key or a list of `Send`) |
 | `@registry.tool("name")` | Register a tool for `tools:` binding |
 | `build_graph(path, registry, state_class=None, *, checkpointer=None, store=None)` | YAML file → compiled `CompiledStateGraph` |
-| `build_graph_from_db(source, registry, db_path, *, checkpointer=None, store=None)` | DB-stored definition → compiled graph (`"flow"` or `"flow@2"`) |
+| `build_graph_from_db(source, registry, db_path, *, checkpointer=None, store=None, base_dir=None)` | DB-stored definition → compiled graph (`"flow"` or `"flow@2"`). `base_dir` is required if the definition uses relative `imports:` / `subgraph:` paths |
 | `draw_mermaid(path, registry, output_path=None)` | Compile and render a Mermaid diagram (`.md` → fenced block) |
 | `export_json_schema(output_path=None)` | Emit the JSON Schema for workflow YAML files |
-| `GraphBuilder(registry, state_class=None, *, checkpointer=None, store=None)` | Power-user class behind `build_graph()` |
+| `GraphBuilder(registry, state_class=None, *, checkpointer=None, store=None)` | Power-user class behind `build_graph()`; `.build(config, *, base_dir=None)` compiles an in-memory `GraphConfig` |
 | `SQLiteLoader(db_path)` | Save/load versioned definitions; implements the pluggable `Loader` protocol |
 
 ## Documentation
