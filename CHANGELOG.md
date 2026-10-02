@@ -47,6 +47,10 @@ changes, listed first — each turns a silent misbehaviour into an explicit erro
 - **Imported subgraph nodes** — a node pulled in through `imports:` that declares
   `subgraph:` now resolves the path next to its own file. Previously it resolved
   against the importing file and failed with `Config file not found`.
+- **`SQLiteLoader.save()` under concurrent writers** — the next version is now
+  allocated and inserted in one statement inside `BEGIN IMMEDIATE`, with a busy
+  timeout. Previously two writers could both read `MAX(version)` and one failed
+  with `UNIQUE constraint failed`. Connections are now also closed after each call.
 
 ### Deprecated
 

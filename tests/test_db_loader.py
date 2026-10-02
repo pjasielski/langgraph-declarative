@@ -123,3 +123,40 @@ class TestDbDefinitionBaseDir:
         SQLiteLoader(db).save("flow", self.SUBGRAPH_DEF)
         with pytest.raises(ConfigValidationError, match="base_dir"):
             build_graph_from_db("flow", self._registry(), db)
+
+
+class TestConcurrentSave:
+    """M06.09: concurrent writers get distinct, consecutive versions."""
+
+    def test_concurrent_saves_allocate_distinct_versions(self, tmp_path):
+        import threading
+
+        db = tmp_path / "g.db"
+        SQLiteLoader(db)  # create the table once, outside the race
+        n = 16
+        barrier = threading.Barrier(n)
+        versions: list[int] = []
+        errors: list[BaseException] = []
+        lock = threading.Lock()
+
+        def writer(i: int) -> None:
+            loader = SQLiteLoader(db)  # one loader per thread, like separate processes
+            barrier.wait()
+            try:
+                v = loader.save("flow", {**SIMPLE_DEF, "description": f"writer {i}"})
+            except BaseException as exc:  # noqa: BLE001 — the test reports any failure
+                with lock:
+                    errors.append(exc)
+                return
+            with lock:
+                versions.append(v)
+
+        threads = [threading.Thread(target=writer, args=(i,)) for i in range(n)]
+        for t in threads:
+            t.start()
+        for t in threads:
+            t.join()
+
+        assert errors == []
+        assert sorted(versions) == list(range(1, n + 1))
+        assert SQLiteLoader(db).versions("flow") == list(range(1, n + 1))
